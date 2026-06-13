@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Firebase Debug - Stroke Prediction</title>
+    <link rel="stylesheet" href="/static/css/theme-toggle.css">
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            background: #0B1120;
+            color: #F1F5F9;
+            padding: 40px;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        h1 {
+            color: #0EA5E9;
+            border-bottom: 2px solid #0EA5E9;
+            padding-bottom: 10px;
+        }
+        .section {
+            background: rgba(15, 23, 42, 0.85);
+            border: 1px solid rgba(56, 189, 248, 0.15);
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .success {
+            color: #10B981;
+        }
+        .error {
+            color: #F43F5E;
+        }
+        .warning {
+            color: #F59E0B;
+        }
+        pre {
+            background: #000;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+        .status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 10px 0;
+        }
+        .icon {
+            font-size: 24px;
+        }
+        button {
+            background: linear-gradient(135deg, #0EA5E9, #0284C7);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            margin: 10px 5px;
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(14, 165, 233, 0.4);
+        }
+        #testResults {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔧 Firebase Authentication Debug Panel</h1>
+    
+    <div class="section">
+        <h2>1. Firebase Configuration Status</h2>
+        <div id="configStatus"></div>
+    </div>
+    
+    <div class="section">
+        <h2>2. Firebase SDK Status</h2>
+        <div id="sdkStatus"></div>
+    </div>
+    
+    <div class="section">
+        <h2>3. Authentication Tests</h2>
+        <button onclick="testEmailAuth()">Test Email/Password</button>
+        <button onclick="testGoogleAuth()">Test Google Sign-In</button>
+        <button onclick="testPasswordReset()">Test Password Reset</button>
+        <div id="testResults"></div>
+    </div>
+    
+    <div class="section">
+        <h2>4. Raw Configuration</h2>
+        <pre id="rawConfig"></pre>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    
+    <!-- Firebase Configuration -->
+    <script>
+        window.FIREBASE_CONFIG = {
+            apiKey: "{{ firebase_config.api_key }}",
+            authDomain: "{{ firebase_config.auth_domain }}",
+            projectId: "{{ firebase_config.project_id }}",
+            storageBucket: "{{ firebase_config.storage_bucket }}",
+            messagingSenderId: "{{ firebase_config.messaging_sender_id }}",
+            appId: "{{ firebase_config.app_id }}",
+            measurementId: "{{ firebase_config.measurement_id }}"
+        };
+    </script>
+    
+    <script>
+        // Check configuration
+        function checkConfig() {
+            const status = [];
+            const config = window.FIREBASE_CONFIG;
+            
+            status.push(createStatus('API Key', config.apiKey ? '✓' : '✗', config.apiKey ? 'success' : 'error'));
+            status.push(createStatus('Auth Domain', config.authDomain || 'Missing', config.authDomain ? 'success' : 'error'));
+            status.push(createStatus('Project ID', config.projectId || 'Missing', config.projectId ? 'success' : 'error'));
+            status.push(createStatus('Storage Bucket', config.storageBucket || 'Missing', config.storageBucket ? 'success' : 'warning'));
+            status.push(createStatus('App ID', config.appId ? '✓' : '✗', config.appId ? 'success' : 'error'));
+            
+            document.getElementById('configStatus').innerHTML = status.join('');
+            document.getElementById('rawConfig').textContent = JSON.stringify(config, null, 2);
+        }
+        
+        // Check SDK
+        function checkSDK() {
+            const status = [];
+            
+            status.push(createStatus('Firebase App', typeof firebase !== 'undefined' ? '✓ Loaded' : '✗ Not Loaded', 
+                typeof firebase !== 'undefined' ? 'success' : 'error'));
+            
+            try {
+                const app = firebase.initializeApp(window.FIREBASE_CONFIG);
+                const auth = firebase.auth();
+                status.push(createStatus('Firebase Initialized', '✓ Success', 'success'));
+                status.push(createStatus('Auth Module', auth ? '✓ Ready' : '✗ Failed', auth ? 'success' : 'error'));
+            } catch (error) {
+                status.push(createStatus('Firebase Initialization', '✗ Failed: ' + error.message, 'error'));
+            }
+            
+            document.getElementById('sdkStatus').innerHTML = status.join('');
+        }
+        
+        function createStatus(label, value, type) {
+            const icon = type === 'success' ? '✓' : type === 'error' ? '✗' : '⚠';
+            return `<div class="status ${type}">
+                <span class="icon">${icon}</span>
+                <strong>${label}:</strong> ${value}
+            </div>`;
+        }
+        
+        function testEmailAuth() {
+            const results = document.getElementById('testResults');
+            results.innerHTML = '<div class="status success"><span class="icon">ℹ</span>Email/Password auth is configured. Try creating an account on the register page.</div>';
+        }
+        
+        function testGoogleAuth() {
+            const results = document.getElementById('testResults');
+            results.innerHTML = '<div class="status"><span class="icon">⏳</span>Testing Google Sign-In...</div>';
+            
+            try {
+                const auth = firebase.auth();
+                const googleProvider = new firebase.auth.GoogleAuthProvider();
+                
+                auth.signInWithPopup(googleProvider)
+                    .then((result) => {
+                        results.innerHTML = `<div class="status success">
+                            <span class="icon">✓</span>
+                            Google Sign-In successful! User: ${result.user.email}
+                        </div>`;
+                        auth.signOut(); // Sign out immediately after test
+                    })
+                    .catch((error) => {
+                        results.innerHTML = `<div class="status error">
+                            <span class="icon">✗</span>
+                            Google Sign-In failed: ${error.message}
+                        </div>`;
+                    });
+            } catch (error) {
+                results.innerHTML = `<div class="status error">
+                    <span class="icon">✗</span>
+                    Error: ${error.message}
+                </div>`;
+            }
+        }
+        
+        function testPasswordReset() {
+            const email = prompt('Enter an email address to test password reset:');
+            if (!email) return;
+            
+            const results = document.getElementById('testResults');
+            results.innerHTML = '<div class="status"><span class="icon">⏳</span>Sending password reset email...</div>';
+            
+            try {
+                const auth = firebase.auth();
+                auth.sendPasswordResetEmail(email)
+                    .then(() => {
+                        results.innerHTML = `<div class="status success">
+                            <span class="icon">✓</span>
+                            Password reset email sent to ${email}
+                        </div>`;
+                    })
+                    .catch((error) => {
+                        results.innerHTML = `<div class="status error">
+                            <span class="icon">✗</span>
+                            Failed: ${error.message}
+                        </div>`;
+                    });
+            } catch (error) {
+                results.innerHTML = `<div class="status error">
+                    <span class="icon">✗</span>
+                    Error: ${error.message}
+                </div>`;
+            }
+        }
+        
+        // Run checks on load
+        setTimeout(() => {
+            checkConfig();
+            checkSDK();
+        }, 500);
+    </script>
+    <script src="/static/js/theme-toggle.js"></script>
+</body>
+</html>

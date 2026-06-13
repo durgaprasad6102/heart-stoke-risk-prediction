@@ -1,0 +1,2201 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Stroke Risk Prediction</title>
+    <meta name="description"
+        content="AI-powered stroke risk prediction dashboard with dual-model analysis and personalized health recommendations.">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/static/css/theme-toggle.css">
+    <style>
+        :root {
+            --primary: #0EA5E9;
+            --primary-dark: #0369A1;
+            --primary-glow: rgba(14, 165, 233, 0.25);
+            --accent: #06D6A0;
+            --accent-alt: #8B5CF6;
+            --success: #10B981;
+            --danger: #F43F5E;
+            --warning: #F59E0B;
+            --bg-dark: #0B1120;
+            --bg-surface: rgba(15, 23, 42, 0.7);
+            --bg-card: rgba(15, 23, 42, 0.85);
+            --bg-elevated: rgba(30, 41, 59, 0.6);
+            --bg-input: rgba(30, 41, 59, 0.8);
+            --border: rgba(56, 189, 248, 0.12);
+            --border-subtle: rgba(56, 189, 248, 0.06);
+            --border-focus: rgba(14, 165, 233, 0.5);
+            --text-primary: #F1F5F9;
+            --text-secondary: #94A3B8;
+            --text-muted: #64748B;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-dark);
+            min-height: 100vh;
+            color: var(--text-primary);
+        }
+
+        /* Background effects */
+        .bg-effects {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+            background:
+                radial-gradient(ellipse 80% 50% at 50% -20%, rgba(14, 165, 233, 0.12), transparent),
+                radial-gradient(ellipse 60% 40% at 90% 100%, rgba(6, 214, 160, 0.08), transparent),
+                radial-gradient(ellipse 40% 50% at 5% 50%, rgba(139, 92, 246, 0.06), transparent);
+        }
+
+        .grid-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+            background-image:
+                linear-gradient(rgba(14, 165, 233, 0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(14, 165, 233, 0.02) 1px, transparent 1px);
+            background-size: 60px 60px;
+        }
+
+        .container {
+            max-width: 1440px;
+            margin: 0 auto;
+            padding: 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Navigation */
+        .navbar {
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 12px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 28px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .nav-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 1.2rem;
+            font-weight: 800;
+            color: var(--text-primary);
+        }
+
+        .nav-brand-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            color: white;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+        }
+
+        .nav-link {
+            padding: 8px 16px;
+            background: transparent;
+            border: 1px solid transparent;
+            border-radius: 10px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.85rem;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 7px;
+        }
+
+        .nav-link:hover {
+            background: var(--bg-elevated);
+            color: var(--text-primary);
+            border-color: var(--border);
+        }
+
+        .nav-link.active {
+            background: linear-gradient(135deg, rgba(14, 165, 233, 0.15), rgba(6, 214, 160, 0.08));
+            color: var(--primary);
+            border-color: rgba(14, 165, 233, 0.25);
+        }
+
+        .nav-link.logout {
+            color: var(--danger);
+        }
+
+        .nav-link.logout:hover {
+            background: rgba(244, 63, 94, 0.1);
+            border-color: rgba(244, 63, 94, 0.2);
+        }
+
+        .nav-link.admin-link {
+            color: var(--accent-alt);
+        }
+
+        .nav-link.admin-link:hover {
+            background: rgba(139, 92, 246, 0.1);
+            border-color: rgba(139, 92, 246, 0.2);
+        }
+
+        .user-badge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 14px;
+            background: rgba(14, 165, 233, 0.08);
+            border: 1px solid rgba(14, 165, 233, 0.15);
+            border-radius: 10px;
+            color: var(--primary);
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+
+        @media (max-width: 900px) {
+            .navbar {
+                flex-direction: column;
+                gap: 12px;
+                padding: 14px;
+            }
+
+            .nav-links {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+        }
+
+        /* Cards */
+        .card {
+            background: var(--bg-card);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 32px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            margin-bottom: 24px;
+        }
+
+        .card-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .card-title .icon-box {
+            width: 42px;
+            height: 42px;
+            background: linear-gradient(135deg, rgba(14, 165, 233, 0.15), rgba(6, 214, 160, 0.08));
+            border: 1px solid rgba(14, 165, 233, 0.2);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+            font-size: 1.1rem;
+        }
+
+        /* Main Grid */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+
+        @media (max-width: 1100px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Form Styles */
+        .form-section {
+            margin-bottom: 24px;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border-subtle);
+        }
+
+        .section-header .sec-icon {
+            width: 28px;
+            height: 28px;
+            background: rgba(14, 165, 233, 0.1);
+            border: 1px solid rgba(14, 165, 233, 0.15);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+            font-size: 0.85rem;
+        }
+
+        .section-header h3 {
+            font-size: 0.92rem;
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+        }
+
+        @media (max-width: 640px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 7px;
+            font-size: 0.82rem;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 11px 14px;
+            background: var(--bg-input);
+            border: 1.5px solid var(--border);
+            border-radius: 10px;
+            font-size: 0.9rem;
+            font-family: inherit;
+            color: var(--text-primary);
+            transition: all 0.3s ease;
+            outline: none;
+        }
+
+        .form-group select {
+            cursor: pointer;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'%3E%3Cpath fill='%2394A3B8' d='M8 11L3 6h10l-5 5z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 14px center;
+            background-size: 14px 14px;
+            padding-right: 40px;
+            border-style: solid;
+            border-width: 1.5px;
+        }
+
+        .form-group select option {
+            background: #1E293B;
+            color: var(--text-primary);
+            padding: 10px;
+        }
+
+        body[data-theme="light"] .form-group select option {
+            background: #FFFFFF;
+            color: #0F172A;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: var(--border-focus);
+            border-style: solid;
+            box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.08);
+        }
+
+        .form-group input[type="range"] {
+            padding: 0;
+            height: 6px;
+            -webkit-appearance: none;
+            appearance: none;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            border-radius: 4px;
+            border: none;
+            cursor: pointer;
+            margin-top: 8px;
+        }
+
+        .form-group input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            background: var(--text-primary);
+            border: 3px solid var(--primary);
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(14, 165, 233, 0.3);
+        }
+
+        .range-value {
+            display: inline-block;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: white;
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 0.75rem;
+        }
+
+        /* Predict Button */
+        .predict-btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 20px;
+            box-shadow: 0 6px 24px var(--primary-glow);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .predict-btn::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, transparent, rgba(255, 255, 255, 0.1));
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .predict-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 36px var(--primary-glow);
+        }
+
+        .predict-btn:hover::before {
+            opacity: 1;
+        }
+
+        .predict-btn.loading {
+            opacity: 0.7;
+            pointer-events: none;
+        }
+
+        .spinner {
+            width: 18px;
+            height: 18px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Results */
+        .results-container {
+            display: none;
+        }
+
+        .results-container.show {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(16px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .placeholder {
+            text-align: center;
+            padding: 50px 20px;
+            color: var(--text-muted);
+        }
+
+        .placeholder i {
+            font-size: 3.5rem;
+            margin-bottom: 16px;
+            opacity: 0.2;
+        }
+
+        .placeholder p {
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+
+        .result-card {
+            background: var(--bg-elevated);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 20px;
+            margin-bottom: 14px;
+            border-left: 4px solid var(--primary);
+            transition: all 0.3s ease;
+        }
+
+        .result-card:hover {
+            border-color: rgba(14, 165, 233, 0.3);
+        }
+
+        .result-card.low-risk {
+            border-left-color: var(--success);
+            background: rgba(16, 185, 129, 0.05);
+        }
+
+        .result-card.medium-risk {
+            border-left-color: var(--warning);
+            background: rgba(245, 158, 11, 0.05);
+        }
+
+        .result-card.high-risk {
+            border-left-color: var(--danger);
+            background: rgba(244, 63, 94, 0.05);
+        }
+
+        .result-card h3 {
+            font-size: 0.92rem;
+            color: var(--text-primary);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .result-card h3 i {
+            font-size: 1rem;
+        }
+
+        .probability-bar {
+            height: 26px;
+            background: rgba(30, 41, 59, 0.8);
+            border-radius: 13px;
+            overflow: hidden;
+            margin-bottom: 10px;
+            border: 1px solid var(--border-subtle);
+        }
+
+        .probability-fill {
+            height: 100%;
+            border-radius: 13px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 0.8rem;
+            min-width: 42px;
+            transition: width 1s ease;
+        }
+
+        .probability-fill.low {
+            background: linear-gradient(90deg, var(--success), #34D399);
+        }
+
+        .probability-fill.medium {
+            background: linear-gradient(90deg, var(--warning), #FCD34D);
+            color: #78350F;
+        }
+
+        .probability-fill.high {
+            background: linear-gradient(90deg, var(--danger), #FB7185);
+        }
+
+        .risk-badge {
+            display: inline-block;
+            padding: 5px 14px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .risk-badge.low {
+            background: rgba(16, 185, 129, 0.15);
+            color: #34D399;
+            border: 1px solid rgba(16, 185, 129, 0.25);
+        }
+
+        .risk-badge.medium {
+            background: rgba(245, 158, 11, 0.15);
+            color: #FCD34D;
+            border: 1px solid rgba(245, 158, 11, 0.25);
+        }
+
+        .risk-badge.high {
+            background: rgba(244, 63, 94, 0.15);
+            color: #FB7185;
+            border: 1px solid rgba(244, 63, 94, 0.25);
+        }
+
+        /* Ensemble Card */
+        .ensemble-card {
+            background: linear-gradient(135deg, rgba(14, 165, 233, 0.2), rgba(6, 214, 160, 0.15));
+            border: 1px solid rgba(14, 165, 233, 0.3);
+            border-radius: 16px;
+            padding: 28px;
+            text-align: center;
+            margin-top: 14px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .ensemble-card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at 30% 50%, rgba(14, 165, 233, 0.15), transparent 70%);
+        }
+
+        .ensemble-card h2 {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            position: relative;
+        }
+
+        .ensemble-probability {
+            font-size: 3.5rem;
+            font-weight: 900;
+            margin: 8px 0;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            position: relative;
+        }
+
+        .ensemble-risk {
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+            position: relative;
+        }
+
+        /* Download button */
+        .download-btn {
+            margin-top: 16px;
+            padding: 10px 20px;
+            background: rgba(14, 165, 233, 0.12);
+            border: 1px solid rgba(14, 165, 233, 0.25);
+            border-radius: 10px;
+            color: var(--primary);
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+        }
+
+        .download-btn:hover {
+            background: rgba(14, 165, 233, 0.2);
+            transform: translateY(-1px);
+        }
+
+        /* Food Recommendations */
+        .food-recommendations {
+            display: none;
+            margin-top: 24px;
+        }
+
+        .food-recommendations.show {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .urgent-alert {
+            background: rgba(244, 63, 94, 0.08);
+            border: 1px solid rgba(244, 63, 94, 0.25);
+            border-radius: 14px;
+            padding: 18px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .urgent-alert i {
+            font-size: 2rem;
+            color: var(--danger);
+        }
+
+        .urgent-alert-text {
+            font-weight: 600;
+            color: #FB7185;
+            font-size: 0.95rem;
+        }
+
+
+        .food-section {
+            margin-bottom: 18px;
+        }
+
+        .food-section h4 {
+            font-size: 0.92rem;
+            color: var(--text-primary);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .food-section h4.eat i {
+            color: var(--success);
+        }
+
+        .food-section h4.avoid i {
+            color: var(--danger);
+        }
+
+        .food-section h4.advice i {
+            color: var(--primary);
+        }
+
+        .food-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 8px;
+        }
+
+        .food-item {
+            background: var(--bg-elevated);
+            border: 1px solid var(--border-subtle);
+            padding: 10px 14px;
+            border-radius: 10px;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            transition: all 0.2s ease;
+        }
+
+        .food-item:hover {
+            border-color: var(--border);
+            transform: translateX(4px);
+        }
+
+        .food-item.avoid {
+            border-color: rgba(244, 63, 94, 0.15);
+            background: rgba(244, 63, 94, 0.04);
+        }
+
+        .advice-list {
+            list-style: none;
+        }
+
+        .advice-list li {
+            padding: 10px 14px;
+            background: rgba(14, 165, 233, 0.06);
+            border: 1px solid rgba(14, 165, 233, 0.1);
+            border-radius: 10px;
+            margin-bottom: 6px;
+            color: var(--text-secondary);
+            font-weight: 500;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .advice-list li::before {
+            content: '\f0eb';
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            color: var(--warning);
+            font-size: 0.8rem;
+        }
+
+        /* Patient Summary */
+        .patient-summary {
+            background: var(--bg-elevated);
+            border: 1px solid var(--border-subtle);
+            border-radius: 14px;
+            padding: 18px;
+            margin-top: 18px;
+        }
+
+        .patient-summary h4 {
+            margin-bottom: 12px;
+            color: var(--text-primary);
+            font-size: 0.92rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .patient-summary h4 i {
+            color: var(--primary);
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+        }
+
+        @media (max-width: 640px) {
+            .summary-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 12px;
+            background: var(--bg-input);
+            border: 1px solid var(--border-subtle);
+            border-radius: 8px;
+            font-size: 0.82rem;
+        }
+
+        .summary-item span:first-child {
+            color: var(--text-muted);
+        }
+
+        .summary-item span:last-child {
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        /* Tab System */
+        .tabs-container {
+            margin-bottom: 20px;
+            border-bottom: 2px solid var(--border-subtle);
+        }
+
+        .tabs {
+            display: flex;
+            gap: 4px;
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            padding: 12px 24px;
+            background: transparent;
+            border: none;
+            border-bottom: 3px solid transparent;
+            color: var(--text-secondary);
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            position: relative;
+            top: 2px;
+        }
+
+        .tab-btn:hover {
+            color: var(--text-primary);
+            background: rgba(14, 165, 233, 0.05);
+        }
+
+        .tab-btn.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+            background: rgba(14, 165, 233, 0.08);
+        }
+
+        .tab-btn i {
+            font-size: 1rem;
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.4s ease;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Doctor Recommendations */
+        .doctor-recommendations {
+            padding: 20px 0;
+        }
+
+        .risk-category-badge {
+            display: inline-block;
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 1.1rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 20px;
+            text-align: center;
+            width: 100%;
+        }
+
+        .risk-category-badge.low {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(16, 185, 129, 0.1));
+            color: #34D399;
+            border: 2px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .risk-category-badge.medium {
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(245, 158, 11, 0.1));
+            color: #FCD34D;
+            border: 2px solid rgba(245, 158, 11, 0.3);
+        }
+
+        .risk-category-badge.high {
+            background: linear-gradient(135deg, rgba(244, 63, 94, 0.2), rgba(244, 63, 94, 0.1));
+            color: #FB7185;
+            border: 2px solid rgba(244, 63, 94, 0.3);
+            animation: pulseRisk 2s infinite;
+        }
+
+        @keyframes pulseRisk {
+
+            0%,
+            100% {
+                box-shadow: 0 0 0 0 rgba(244, 63, 94, 0.4);
+            }
+
+            50% {
+                box-shadow: 0 0 30px 10px rgba(244, 63, 94, 0.1);
+            }
+        }
+
+        .doctor-section {
+            background: var(--bg-elevated);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 20px;
+            margin-bottom: 16px;
+        }
+
+        .doctor-section h4 {
+            font-size: 1rem;
+            color: var(--text-primary);
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border-subtle);
+        }
+
+        .doctor-section h4 i {
+            color: var(--primary);
+        }
+
+        .doctor-list {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .doctor-list li {
+            padding: 10px 14px;
+            background: rgba(15, 23, 42, 0.5);
+            border: 1px solid var(--border-subtle);
+            border-radius: 10px;
+            margin-bottom: 8px;
+            color: var(--text-secondary);
+            font-size: 0.88rem;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            line-height: 1.6;
+        }
+
+        .doctor-list li:before {
+            content: '\f0a4';
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            color: var(--primary);
+            font-size: 0.75rem;
+            margin-top: 4px;
+            flex-shrink: 0;
+        }
+
+        .doctor-list.critical li:before {
+            color: var(--danger);
+        }
+
+        /* Dashboard consult banner */
+        .dash-consult-wrap {
+            margin-top: 18px;
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .dash-consult-wrap.show {
+            display: block;
+        }
+
+        .dash-consult-banner {
+            border-radius: 14px;
+            padding: 18px 22px;
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+        }
+
+        .dash-consult-banner.low {
+            background: rgba(16, 185, 129, 0.08);
+            border: 1.5px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .dash-consult-banner.medium {
+            background: rgba(245, 158, 11, 0.08);
+            border: 1.5px solid rgba(245, 158, 11, 0.35);
+        }
+
+        .dash-consult-banner.high {
+            background: rgba(244, 63, 94, 0.1);
+            border: 1.5px solid rgba(244, 63, 94, 0.4);
+        }
+
+        .dash-consult-icon {
+            font-size: 1.7rem;
+            flex-shrink: 0;
+        }
+
+        .dash-consult-text h4 {
+            font-size: 0.97rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .dash-consult-banner.low .dash-consult-text h4 {
+            color: #34D399;
+        }
+
+        .dash-consult-banner.medium .dash-consult-text h4 {
+            color: #FCD34D;
+        }
+
+        .dash-consult-banner.high .dash-consult-text h4 {
+            color: #FB7185;
+        }
+
+        .dash-consult-text p {
+            font-size: 0.87rem;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        .dash-doctor-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 10px;
+            margin-top: 14px;
+        }
+
+        .dash-doc-card {
+            background: var(--bg-elevated);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 14px 16px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .dash-doc-card::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+        }
+
+        .dash-doc-card.low::before {
+            background: var(--success);
+        }
+
+        .dash-doc-card.medium::before {
+            background: var(--warning);
+        }
+
+        .dash-doc-card.high::before {
+            background: var(--danger);
+        }
+
+        .dash-doc-name {
+            font-weight: 700;
+            font-size: 0.87rem;
+            color: var(--text-primary);
+            margin-bottom: 5px;
+        }
+
+        .dash-doc-reason {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            line-height: 1.5;
+            margin-bottom: 8px;
+        }
+
+        .dash-urg {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 3px 9px;
+            border-radius: 6px;
+            font-size: 0.73rem;
+            font-weight: 700;
+        }
+
+        .dash-urg.low {
+            background: rgba(16, 185, 129, 0.1);
+            color: #34D399;
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+
+        .dash-urg.medium {
+            background: rgba(245, 158, 11, 0.1);
+            color: #FCD34D;
+            border: 1px solid rgba(245, 158, 11, 0.2);
+        }
+
+        .dash-urg.high {
+            background: rgba(244, 63, 94, 0.1);
+            color: #FB7185;
+            border: 1px solid rgba(244, 63, 94, 0.2);
+        }
+
+        .doctor-list.indian-foods li {
+            background: rgba(6, 214, 160, 0.05);
+            border-color: rgba(6, 214, 160, 0.1);
+        }
+
+        .doctor-list.avoid-foods li {
+            background: rgba(244, 63, 94, 0.05);
+            border-color: rgba(244, 63, 94, 0.1);
+        }
+
+        .doctor-list.avoid-foods li:before {
+            content: '\f00d';
+            color: var(--danger);
+        }
+
+        /* Delete Account Button */
+        .nav-link.delete-account {
+            color: #EF4444;
+            border-color: rgba(239, 68, 68, 0.2);
+        }
+
+        .nav-link.delete-account:hover {
+            background: rgba(239, 68, 68, 0.15);
+            border-color: rgba(239, 68, 68, 0.3);
+        }
+
+        /* Confirmation Modal */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(8px);
+            z-index: 9999;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal-overlay.show {
+            display: flex;
+        }
+
+        .modal {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 32px;
+            max-width: 480px;
+            width: 90%;
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.5);
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .modal-icon {
+            width: 52px;
+            height: 52px;
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(239, 68, 68, 0.1));
+            border: 2px solid rgba(239, 68, 68, 0.3);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #EF4444;
+            font-size: 1.5rem;
+        }
+
+        .modal-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .modal-body {
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 24px;
+            font-size: 0.95rem;
+        }
+
+        .modal-warning {
+            background: rgba(239, 68, 68, 0.1);
+            border-left: 4px solid #EF4444;
+            padding: 12px 16px;
+            border-radius: 8px;
+            color: #FCA5A5;
+            font-weight: 600;
+            margin-top: 16px;
+            font-size: 0.9rem;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+        }
+
+        .modal-btn {
+            padding: 10px 24px;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 1px solid;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .modal-btn.cancel {
+            background: var(--bg-elevated);
+            border-color: var(--border);
+            color: var(--text-secondary);
+        }
+
+        .modal-btn.cancel:hover {
+            background: var(--bg-input);
+            border-color: var(--border-focus);
+            color: var(--text-primary);
+        }
+
+        .modal-btn.confirm {
+            background: linear-gradient(135deg, #EF4444, #DC2626);
+            border-color: #EF4444;
+            color: white;
+        }
+
+        .modal-btn.confirm:hover {
+            background: linear-gradient(135deg, #DC2626, #B91C1C);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+        }
+
+        .modal-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        /* Error message */
+        .error-message {
+            background: rgba(244, 63, 94, 0.08);
+            border: 1px solid rgba(244, 63, 94, 0.2);
+            color: #FB7185;
+            padding: 12px 16px;
+            border-radius: 10px;
+            margin-top: 12px;
+            display: none;
+            font-weight: 500;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        /* NLP panel */
+        .nlp-panel {
+            background: linear-gradient(135deg, rgba(14, 165, 233, 0.06), rgba(6, 214, 160, 0.04));
+            border: 1px solid rgba(14, 165, 233, 0.18);
+            border-radius: 16px;
+            padding: 20px 24px;
+            margin-bottom: 18px;
+        }
+
+        .nlp-panel-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 0.9rem;
+            color: var(--primary);
+        }
+
+        .nlp-panel-header .chevron {
+            margin-left: auto;
+            transition: transform 0.3s;
+        }
+
+        .nlp-panel-body {
+            display: none;
+            margin-top: 14px;
+        }
+
+        .nlp-panel-body.open {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .nlp-hint-sm {
+            font-size: 0.81rem;
+            color: var(--text-secondary);
+            line-height: 1.65;
+            background: rgba(14, 165, 233, 0.04);
+            border: 1px solid rgba(14, 165, 233, 0.1);
+            border-radius: 9px;
+            padding: 10px 14px;
+            margin-bottom: 12px;
+        }
+
+        .nlp-hint-sm code {
+            background: rgba(14, 165, 233, 0.1);
+            border-radius: 4px;
+            padding: 1px 5px;
+            font-family: monospace;
+            color: var(--accent);
+        }
+
+        .nlp-dash-area {
+            width: 100%;
+            min-height: 72px;
+            padding: 12px 16px;
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            color: var(--text-primary);
+            font-family: 'Inter', sans-serif;
+            font-size: 0.9rem;
+            line-height: 1.6;
+            resize: vertical;
+            transition: all 0.3s;
+        }
+
+        .nlp-dash-area:focus {
+            outline: none;
+            border-color: var(--border-focus);
+            box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.15);
+        }
+
+        .nlp-dash-area::placeholder {
+            color: var(--text-muted);
+        }
+
+        .nlp-btn {
+            margin-top: 10px;
+            padding: 10px 20px;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-weight: 700;
+            font-size: 0.86rem;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s;
+        }
+
+        .nlp-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(14, 165, 233, 0.3);
+        }
+
+        .nlp-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .nlp-status {
+            font-size: 0.81rem;
+            color: var(--text-muted);
+            margin-top: 8px;
+            min-height: 18px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="bg-effects"></div>
+    <div class="grid-overlay"></div>
+    <div class="container">
+        <!-- Navigation -->
+        <nav class="navbar">
+            <div class="nav-brand">
+                <div class="nav-brand-icon"><i class="fas fa-heartbeat"></i></div>
+                <span>StrokeGuard AI</span>
+            </div>
+            <div class="nav-links">
+                <a href="/dashboard" class="nav-link active"><i class="fas fa-chart-line"></i>Dashboard</a>
+                <a href="/history" class="nav-link"><i class="fas fa-clock-rotate-left"></i>History</a>
+                <a href="/medications" class="nav-link"><i class="fas fa-capsules"></i>Medications</a>
+                <a href="/doctor-recommendations" class="nav-link"><i class="fas fa-user-doctor"></i>Doctor Advice</a>
+                <a href="#" class="nav-link" onclick="showDoctorConsultancyModal(); return false;"><i class="fas fa-user-md"></i>Consultancy</a>
+                {% if role == 'admin' %}
+                <a href="/admin" class="nav-link admin-link"><i class="fas fa-shield-halved"></i>Admin</a>
+                {% endif %}
+                <div class="user-badge">
+                    <i class="fas fa-user-circle"></i>
+                    {{ user }}
+                </div>
+                <button class="nav-link delete-account" onclick="showDeleteAccountModal()"
+                    style="border: 1px solid rgba(239, 68, 68, 0.2);"><i class="fas fa-user-slash"></i>Delete
+                    Account</button>
+                <a href="/logout" class="nav-link logout"><i class="fas fa-right-from-bracket"></i>Logout</a>
+            </div>
+        </nav>
+
+        <!-- Delete Account Confirmation Modal -->
+        <div class="modal-overlay" id="deleteAccountModal">
+            <div class="modal">
+                <div class="modal-header">
+                    <div class="modal-icon"><i class="fas fa-exclamation-triangle"></i></div>
+                    <h2 class="modal-title">Delete Account Permanently?</h2>
+                </div>
+                <div class="modal-body">
+                    <p>Are you absolutely sure you want to delete your account?</p>
+                    <p>This action will permanently remove:</p>
+                    <ul style="margin: 12px 0; padding-left: 24px; color: var(--text-secondary);">
+                        <li>Your authentication credentials</li>
+                        <li>All prediction history and results</li>
+                        <li>All medication reminders</li>
+                        <li>All personal data associated with your account</li>
+                    </ul>
+                    <div class="modal-warning">
+                        ⚠️ This action cannot be undone!
+                    </div>
+                </div>
+                <div class="modal-actions">
+                    <button class="modal-btn cancel" onclick="hideDeleteAccountModal()"><i
+                            class="fas fa-times"></i>Cancel</button>
+                    <button class="modal-btn confirm" id="confirmDeleteBtn" onclick="confirmDeleteAccount()"><i
+                            class="fas fa-trash"></i>Yes, Delete My Account</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Doctor Consultancy Modal -->
+        <div class="modal-overlay" id="doctorConsultancyModal">
+            <div class="modal">
+                <div class="modal-header">
+                    <div class="modal-icon" style="background: linear-gradient(135deg, rgba(14, 165, 233, 0.2), rgba(6, 214, 160, 0.1)); border-color: rgba(14, 165, 233, 0.3); color: var(--primary);"><i class="fas fa-user-md"></i></div>
+                    <h2 class="modal-title">Doctor Consultancy</h2>
+                </div>
+                <div class="modal-body">
+                    <div id="doctorListSection">
+                        <p style="margin-bottom: 15px;">Select a specialist related to your health concerns:</p>
+                        <div class="dash-doctor-grid" style="margin-bottom: 20px;">
+                            <div class="dash-doc-card medium">
+                                <div class="dash-doc-name"><i class="fas fa-brain" style="color:var(--primary);margin-right:6px;"></i>Neurologist</div>
+                                <div class="dash-doc-reason">Specializes in stroke risk, brain health, and nervous system disorders.</div>
+                                <button class="modal-btn confirm" style="margin-top: 10px; width: 100%; justify-content: center; font-size: 0.8rem; padding: 6px;" onclick="showAppointmentForm('Neurologist (Stroke Specialist)')">Book Appointment</button>
+                            </div>
+                            <div class="dash-doc-card high">
+                                <div class="dash-doc-name"><i class="fas fa-heart-pulse" style="color:var(--danger);margin-right:6px;"></i>Cardiologist</div>
+                                <div class="dash-doc-reason">Specializes in heart disease, blood pressure, and cardiovascular health.</div>
+                                <button class="modal-btn confirm" style="margin-top: 10px; width: 100%; justify-content: center; font-size: 0.8rem; padding: 6px;" onclick="showAppointmentForm('Cardiologist (Heart Specialist)')">Book Appointment</button>
+                            </div>
+                            <div class="dash-doc-card low">
+                                <div class="dash-doc-name"><i class="fas fa-stethoscope" style="color:var(--success);margin-right:6px;"></i>General Physician</div>
+                                <div class="dash-doc-reason">For general checkups, lifestyle advice, and initial assessments.</div>
+                                <button class="modal-btn confirm" style="margin-top: 10px; width: 100%; justify-content: center; font-size: 0.8rem; padding: 6px;" onclick="showAppointmentForm('General Physician')">Book Appointment</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="appointmentFormSection" style="display: none;">
+                        <h3 style="margin-bottom: 12px; font-size: 1.1rem; color: var(--text-primary);" id="appointmentFormTitle">Book Appointment</h3>
+                        <form id="appointmentForm" onsubmit="submitAppointment(event)">
+                            <div class="form-group" style="margin-bottom: 14px;">
+                                <label>Patient Name</label>
+                                <input type="text" id="apptName" required placeholder="Enter your full name">
+                            </div>
+                            <div class="form-group" style="margin-bottom: 14px;">
+                                <label>Age</label>
+                                <input type="number" id="apptAge" required min="0" max="150" placeholder="Enter your age">
+                            </div>
+                            <div class="form-group" style="margin-bottom: 14px;">
+                                <label>Problem Context</label>
+                                <select id="apptProblem" required>
+                                    <option value="Stroke Risk Assessment">Stroke Risk Assessment</option>
+                                    <option value="Heart Health Checkup">Heart Health Checkup</option>
+                                    <option value="High Blood Pressure Management">High Blood Pressure Management</option>
+                                    <option value="Diabetes/Glucose Management">Diabetes/Glucose Management</option>
+                                    <option value="General Health Advice">General Health Advice</option>
+                                </select>
+                            </div>
+                            <input type="hidden" id="apptDoctorType">
+                            <div class="modal-actions" style="margin-top: 20px;">
+                                <button type="button" class="modal-btn cancel" onclick="backToDoctorList()"><i class="fas fa-arrow-left"></i>Back</button>
+                                <button type="submit" class="modal-btn confirm"><i class="fas fa-calendar-check"></i>Confirm Booking</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <!-- Action Buttons -->
+                <div class="modal-actions" id="doctorListActions">
+                    <button class="modal-btn cancel" onclick="hideDoctorConsultancyModal()"><i class="fas fa-times"></i>Close</button>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- Main Grid -->
+        <div class="main-grid">
+            <!-- Input Form -->
+            <div class="card">
+                <h2 class="card-title">
+                    <div class="icon-box"><i class="fas fa-user-pen"></i></div>
+                    Patient Information
+                </h2>
+
+                <!-- NLP Description Panel -->
+                <div class="nlp-panel">
+                    <div class="nlp-panel-header" onclick="toggleDashNLP()">
+                        <i class="fas fa-wand-magic-sparkles"></i>
+                        <span>💬 Quick-fill from text description (optional)</span>
+                        <i class="fas fa-chevron-down chevron" id="dashNlpChevron"></i>
+                    </div>
+                    <div class="nlp-panel-body" id="dashNlpBody">
+                        <div class="nlp-hint-sm">
+                            Type your health details in plain English — the form will auto-fill instantly.<br>
+                            <strong>Example:</strong>
+                            <code>age 55, glucose 175, bmi 29, blood pressure 148, smoking smokes, gender female, married yes, work private, residence urban, heart disease no</code>
+                        </div>
+                        <input type="text" id="dashDescArea" class="nlp-dash-area"
+                            placeholder="e.g. age 55, glucose 175, bmi 29, blood pressure 148, heart disease no, smoking smokes..."
+                            style="min-height: 48px;">
+                        <div>
+                            <button class="nlp-btn" id="dashFillBtn" onclick="parseDashDescription()"><i
+                                    class="fas fa-magic"></i> Auto-fill Form</button>
+                        </div>
+                        <div class="nlp-status" id="dashNlpStatus"></div>
+                    </div>
+                </div>
+
+                <form id="predictionForm">
+                    <!-- Personal Information -->
+                    <div class="form-section">
+                        <div class="section-header">
+                            <div class="sec-icon"><i class="fas fa-user"></i></div>
+                            <h3>Personal Details</h3>
+                        </div>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>Age <span class="range-value" id="ageValue">50</span></label>
+                                <input type="range" id="age" name="age" min="0" max="100" value="50">
+                                <span style="font-size: 0.75rem; color: var(--text-muted); margin-top: 6px;">Patient's age in years.</span>
+                            </div>
+                            <div class="form-group">
+                                <label>Gender</label>
+                                <select id="gender" name="gender">
+                                    <option value="Female">Female</option>
+                                    <option value="Male">Male</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                                <span style="font-size: 0.75rem; color: var(--text-muted); margin-top: 6px;">Biological sex for risk baseline.</span>
+                            </div>
+                            <div class="form-group">
+                                <label>Ever Married</label>
+                                <select id="ever_married" name="ever_married">
+                                    <option value="Yes">Yes</option>
+                                    <option value="No">No</option>
+                                </select>
+                                <span style="font-size: 0.75rem; color: var(--text-muted); margin-top: 6px;">Marital history context.</span>
+                            </div>
+                            <div class="form-group">
+                                <label>Residence Type</label>
+                                <select id="residence_type" name="residence_type">
+                                    <option value="Urban">Urban</option>
+                                    <option value="Rural">Rural</option>
+                                </select>
+                                <span style="font-size: 0.75rem; color: var(--text-muted); margin-top: 6px;">Living environment (Urban/Rural).</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Health Information -->
+                    <div class="form-section">
+                        <div class="section-header">
+                            <div class="sec-icon"><i class="fas fa-heart-pulse"></i></div>
+                            <h3>Health Metrics</h3>
+                        </div>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>Hypertension</label>
+                                <select id="hypertension" name="hypertension">
+                                    <option value="0">No</option>
+                                    <option value="1">Yes</option>
+                                </select>
+                                <span style="font-size: 0.75rem; color: var(--text-muted); margin-top: 6px;">Does the patient have high blood pressure?</span>
+                            </div>
+                            <div class="form-group">
+                                <label>Heart Disease</label>
+                                <select id="heart_disease" name="heart_disease">
+                                    <option value="0">No</option>
+                                    <option value="1">Yes</option>
+                                </select>
+                                <span style="font-size: 0.75rem; color: var(--text-muted); margin-top: 6px;">Any prior heart conditions?</span>
+                            </div>
+                            <div class="form-group">
+                                <label>Avg Glucose <span class="range-value" id="glucoseValue">100</span></label>
+                                <input type="range" id="avg_glucose_level" name="avg_glucose_level" min="50" max="300"
+                                    value="100">
+                                <span style="font-size: 0.75rem; color: var(--text-muted); margin-top: 6px;">Average blood glucose level (mg/dL).</span>
+                            </div>
+                            <div class="form-group">
+                                <label>BMI <span class="range-value" id="bmiValue">25.0</span></label>
+                                <input type="range" id="bmi" name="bmi" min="10" max="60" value="25" step="0.1">
+                                <span style="font-size: 0.75rem; color: var(--text-muted); margin-top: 6px;">Body Mass Index (kg/m²).</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Lifestyle Information -->
+                    <div class="form-section">
+                        <div class="section-header">
+                            <div class="sec-icon"><i class="fas fa-briefcase"></i></div>
+                            <h3>Lifestyle</h3>
+                        </div>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>Work Type</label>
+                                <select id="work_type" name="work_type">
+                                    <option value="Private">Private</option>
+                                    <option value="Self-employed">Self-employed</option>
+                                    <option value="Govt_job">Government Job</option>
+                                    <option value="children">Children</option>
+                                    <option value="Never_worked">Never Worked</option>
+                                </select>
+                                <span style="font-size: 0.75rem; color: var(--text-muted); margin-top: 6px;">Primary occupation category.</span>
+                            </div>
+                            <div class="form-group">
+                                <label>Smoking Status</label>
+                                <select id="smoking_status" name="smoking_status">
+                                    <option value="never smoked">Never Smoked</option>
+                                    <option value="formerly smoked">Formerly Smoked</option>
+                                    <option value="smokes">Currently Smokes</option>
+                                    <option value="Unknown">Unknown</option>
+                                </select>
+                                <span style="font-size: 0.75rem; color: var(--text-muted); margin-top: 6px;">Current or past smoking habits.</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="predict-btn" id="predictBtn">
+                        <i class="fas fa-wand-magic-sparkles"></i>
+                        <span>Analyze Stroke Risk</span>
+                    </button>
+                </form>
+                <div class="error-message" id="errorMessage"></div>
+            </div>
+
+            <!-- Results Section -->
+            <div class="card">
+                <h2 class="card-title">
+                    <div class="icon-box"><i class="fas fa-chart-column"></i></div>
+                    Analysis Results
+                </h2>
+
+                <div class="placeholder" id="placeholder">
+                    <i class="fas fa-microscope"></i>
+                    <p>Enter patient information and click<br><strong>Analyze Stroke Risk</strong> to see results</p>
+                </div>
+
+                <div class="results-container" id="resultsContainer">
+                    <!-- Tabs Navigation -->
+                    <div class="tabs-container">
+                        <div class="tabs">
+                            <button class="tab-btn active" onclick="switchTab(this, 'model-results')">
+                                <i class="fas fa-brain"></i> Model Predictions
+                            </button>
+                            <button class="tab-btn" onclick="switchTab(this, 'food-recommendations')">
+                                <i class="fas fa-utensils"></i> Food Recommendations
+                            </button>
+                            <button class="tab-btn" onclick="switchTab(this, 'indian-food-recommendations')">
+                                <i class="fas fa-bowl-rice"></i> Indian Food Suggestions
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Tab: Model Results -->
+                    <div id="model-results" class="tab-content active">
+                        <!-- Model A Result -->
+                        <div class="result-card" id="resultA">
+                            <h3><i class="fas fa-brain"></i> Model A - Original Data</h3>
+                            <div class="probability-bar">
+                                <div class="probability-fill" id="probFillA" style="width: 0%;">0%</div>
+                            </div>
+                            <span class="risk-badge" id="riskBadgeA">-</span>
+                        </div>
+
+                        <!-- Model B Result -->
+                        <div class="result-card" id="resultB">
+                            <h3><i class="fas fa-robot"></i> Model B - Synthetic Data</h3>
+                            <div class="probability-bar">
+                                <div class="probability-fill" id="probFillB" style="width: 0%;">0%</div>
+                            </div>
+                            <span class="risk-badge" id="riskBadgeB">-</span>
+                        </div>
+
+                        <!-- Ensemble Result -->
+                        <div class="ensemble-card" id="ensembleCard">
+                            <h2>Combined Prediction</h2>
+                            <div class="ensemble-probability" id="ensembleProb">--%</div>
+                            <div class="ensemble-risk" id="ensembleRisk">Risk Level: --</div>
+                        </div>
+
+                        <!-- Consult Doctor Banner -->
+                        <div class="dash-consult-wrap" id="dashConsultWrap">
+                            <div class="dash-consult-banner low" id="dashConsultBanner">
+                                <div class="dash-consult-icon" id="dashConsultIcon">✅</div>
+                                <div class="dash-consult-text">
+                                    <h4 id="dashConsultTitle">No Urgent Consultation Needed</h4>
+                                    <p id="dashConsultMsg"></p>
+                                </div>
+                            </div>
+                            <div class="dash-doctor-grid" id="dashDoctorGrid"></div>
+                            <div style="text-align: center; margin-top: 12px;">
+                                <a href="/doctor-recommendations"
+                                    style="font-size: 0.83rem; color: var(--primary); text-decoration: none; font-weight: 600;">
+                                    <i class="fas fa-arrow-right"></i> Full Doctor Advice Page
+                                </a>
+                            </div>
+                        </div>
+
+                        <!-- Download PDF -->
+                        <div style="text-align: center; margin-top: 16px;">
+                            <button class="download-btn" id="downloadPdfBtn" onclick="downloadPDF()"
+                                style="display: none;">
+                                <i class="fas fa-file-pdf"></i> Download Report as PDF
+                            </button>
+                        </div>
+
+                        <!-- Patient Summary -->
+                        <div class="patient-summary">
+                            <h4><i class="fas fa-clipboard-list"></i> Patient Summary</h4>
+                            <div class="summary-grid" id="patientSummary"></div>
+                        </div>
+                    </div>
+
+                    <!-- Tab: Food Recommendations -->
+                    <div id="food-recommendations" class="tab-content">
+                        <div class="food-recommendations-content">
+                            <div class="urgent-alert" id="urgentAlert" style="display: none;">
+                                <i class="fas fa-triangle-exclamation"></i>
+                                <div class="urgent-alert-text" id="urgentMessage"></div>
+                            </div>
+                            <div class="food-section">
+                                <h4 class="eat"><i class="fas fa-circle-check"></i> Recommended Foods</h4>
+                                <div class="food-list" id="foodsToEat"></div>
+                            </div>
+                            <div class="food-section">
+                                <h4 class="avoid"><i class="fas fa-circle-xmark"></i> Foods to Avoid</h4>
+                                <div class="food-list" id="foodsToAvoid"></div>
+                            </div>
+                            <div class="food-section">
+                                <h4 class="advice"><i class="fas fa-lightbulb"></i> General Advice</h4>
+                                <ul class="advice-list" id="generalAdvice"></ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tab: Indian Food Recommendations -->
+                    <div id="indian-food-recommendations" class="tab-content">
+                        <div class="indian-food-recommendations">
+                            <div class="food-section">
+                                <h4 class="eat"><i class="fas fa-bowl-rice"></i> Indian Foods to Eat</h4>
+                                <ul class="advice-list" id="indianFoodsMain"></ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="dashboard-footer" style="text-align: center; color: var(--text-secondary); padding: 30px; margin-top: 40px; font-size: 0.95rem; font-weight: 300;">
+            <p>🏥 Stroke Risk Prediction Dashboard | Data Science & Healthcare Innovation | 2024</p>
+        </div>
+    </div>
+
+    <script>
+        // Range input handlers
+        const ageInput = document.getElementById('age');
+        const ageValue = document.getElementById('ageValue');
+        const glucoseInput = document.getElementById('avg_glucose_level');
+        const glucoseValue = document.getElementById('glucoseValue');
+        const bmiInput = document.getElementById('bmi');
+        const bmiValue = document.getElementById('bmiValue');
+
+        ageInput.addEventListener('input', (e) => ageValue.textContent = e.target.value);
+        glucoseInput.addEventListener('input', (e) => glucoseValue.textContent = e.target.value);
+        bmiInput.addEventListener('input', (e) => bmiValue.textContent = parseFloat(e.target.value).toFixed(1));
+
+        // Store last result for PDF download
+        let lastResult = null;
+        let lastInputData = null;
+
+        // Form submission
+        const form = document.getElementById('predictionForm');
+        const predictBtn = document.getElementById('predictBtn');
+        const resultsContainer = document.getElementById('resultsContainer');
+        const placeholder = document.getElementById('placeholder');
+        const errorMessage = document.getElementById('errorMessage');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            predictBtn.classList.add('loading');
+            predictBtn.innerHTML = '<div class="spinner"></div><span>Analyzing...</span>';
+            errorMessage.classList.remove('show');
+
+            const data = {
+                age: ageInput.value,
+                gender: document.getElementById('gender').value,
+                ever_married: document.getElementById('ever_married').value,
+                residence_type: document.getElementById('residence_type').value,
+                hypertension: document.getElementById('hypertension').value,
+                heart_disease: document.getElementById('heart_disease').value,
+                avg_glucose_level: glucoseInput.value,
+                bmi: bmiInput.value,
+                work_type: document.getElementById('work_type').value,
+                smoking_status: document.getElementById('smoking_status').value
+            };
+
+            lastInputData = data;
+
+            try {
+                const response = await fetch('/predict', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    lastResult = result;
+                    displayResults(result);
+                    displayFoodRecommendations(result.food_recommendations);
+                    displayIndianFoodRecommendations(result.indian_food_recommendations);
+                    placeholder.style.display = 'none';
+                    resultsContainer.classList.add('show');
+                    document.getElementById('downloadPdfBtn').style.display = 'inline-flex';
+                } else {
+                    showError(result.error || 'Prediction failed');
+                }
+            } catch (error) {
+                showError('An error occurred. Please try again.');
+            } finally {
+                predictBtn.classList.remove('loading');
+                predictBtn.innerHTML = '<i class="fas fa-wand-magic-sparkles"></i><span>Analyze Stroke Risk</span>';
+            }
+        });
+
+        // Tab switching function
+        function switchTab(btn, tabName) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            btn.classList.add('active');
+            const tabContent = document.getElementById(tabName);
+            if (tabContent) tabContent.classList.add('active');
+        }
+
+        function displayResults(result) {
+            updateModelDisplay('A', result.model_A.probability, result.model_A.risk_level);
+            updateModelDisplay('B', result.model_B.probability, result.model_B.risk_level);
+            document.getElementById('ensembleProb').textContent = result.ensemble.probability + '%';
+            document.getElementById('ensembleRisk').textContent = 'Risk Level: ' + result.ensemble.risk_level;
+            updatePatientSummary();
+
+            // ---- Consult Doctor Banner ----
+            const riskLevel = (result.ensemble.risk_level || 'LOW').toLowerCase();
+            const consultWrap = document.getElementById('dashConsultWrap');
+            const consultBanner = document.getElementById('dashConsultBanner');
+            const consultIcon = document.getElementById('dashConsultIcon');
+            const consultTitle = document.getElementById('dashConsultTitle');
+            const consultMsg = document.getElementById('dashConsultMsg');
+            const doctorGrid = document.getElementById('dashDoctorGrid');
+
+            consultBanner.className = 'dash-consult-banner ' + riskLevel;
+            consultIcon.textContent = riskLevel === 'high' ? '🚨' : riskLevel === 'medium' ? '⚠️' : '✅';
+            const titleMap = { low: 'No Urgent Consultation Needed', medium: 'Doctor Consultation Recommended', high: '⛑️ URGENT — See a Doctor Immediately' };
+            consultTitle.textContent = titleMap[riskLevel] || '';
+            consultMsg.textContent = result.consult_message || '';
+            doctorGrid.innerHTML = '';
+            if (result.doctor_types && result.doctor_types.length > 0) {
+                result.doctor_types.forEach(d => {
+                    const urgUp = (d.urgency || '').toUpperCase();
+                    const uc = urgUp.includes('URGENT') || urgUp.includes('IMMEDIATE') ? 'high' : urgUp.includes('WEEK') ? 'medium' : 'low';
+                    doctorGrid.innerHTML += `
+                        <div class="dash-doc-card ${riskLevel}">
+                            <div class="dash-doc-name"><i class="fas fa-user-doctor" style="color:var(--primary);margin-right:6px;"></i>${d.type}</div>
+                            <div class="dash-doc-reason">${d.reason}</div>
+                            <span class="dash-urg ${uc}"><i class="fas fa-clock"></i> ${d.urgency}</span>
+                        </div>`;
+                });
+            }
+            consultWrap.classList.add('show');
+        }
+
+        function updateModelDisplay(model, probability, riskLevel) {
+            const probFill = document.getElementById(`probFill${model}`);
+            const riskBadge = document.getElementById(`riskBadge${model}`);
+            const resultCard = document.getElementById(`result${model}`);
+            const riskClass = riskLevel === 'LOW' ? 'low' : riskLevel === 'MEDIUM' ? 'medium' : 'high';
+
+            probFill.textContent = probability + '%';
+            probFill.style.width = probability + '%';
+            probFill.className = `probability-fill ${riskClass}`;
+            riskBadge.className = `risk-badge ${riskClass}`;
+            riskBadge.textContent = riskLevel;
+        }
+
+        function updatePatientSummary() {
+            const summary = document.getElementById('patientSummary');
+            const data = {
+                'Age': ageInput.value,
+                'Gender': document.getElementById('gender').value,
+                'Married': document.getElementById('ever_married').value,
+                'Work': document.getElementById('work_type').value,
+                'Hypertension': document.getElementById('hypertension').value === '1' ? 'Yes' : 'No',
+                'Heart Disease': document.getElementById('heart_disease').value === '1' ? 'Yes' : 'No',
+                'Glucose': glucoseInput.value + ' mg/dL',
+                'BMI': bmiInput.value
+            };
+            summary.innerHTML = Object.entries(data).map(([key, value]) => `<div class="summary-item"><span>${key}</span><span>${value}</span></div>`).join('');
+        }
+
+        function showError(message) {
+            errorMessage.textContent = message;
+            errorMessage.classList.add('show');
+            setTimeout(() => errorMessage.classList.remove('show'), 5000);
+        }
+
+        function downloadPDF() {
+            if (!lastResult || !lastInputData) return;
+            const params = new URLSearchParams();
+            params.set('data', JSON.stringify(lastInputData));
+            params.set('results', JSON.stringify({
+                model_A: lastResult.model_A,
+                model_B: lastResult.model_B,
+                ensemble: lastResult.ensemble
+            }));
+            params.set('food', JSON.stringify(lastResult.food_recommendations));
+            params.set('doctor', JSON.stringify(lastResult.doctor_recommendations));
+            window.open('/download-report?' + params.toString(), '_blank');
+        }
+
+        // Dashboard NLP functions
+        function toggleDashNLP() {
+            const body = document.getElementById('dashNlpBody');
+            const chevron = document.getElementById('dashNlpChevron');
+            body.classList.toggle('open');
+            chevron.style.transform = body.classList.contains('open') ? 'rotate(180deg)' : 'rotate(0deg)';
+        }
+
+        async function parseDashDescription() {
+            const area = document.getElementById('dashDescArea');
+            const btn = document.getElementById('dashFillBtn');
+            const status = document.getElementById('dashNlpStatus');
+            const text = area.value.trim();
+            if (!text) return;
+            btn.disabled = true;
+            status.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Analyzing text...';
+            try {
+                const resp = await fetch('/api/parse-health-description', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ description: text })
+                });
+                const data = await resp.json();
+                if (data.success && data.extracted) {
+                    const ex = data.extracted;
+                    if (ex.age) { document.getElementById('age').value = ex.age; document.getElementById('ageValue').textContent = ex.age; }
+                    if (ex.gender) document.getElementById('gender').value = ex.gender;
+                    if (ex.ever_married) document.getElementById('ever_married').value = ex.ever_married;
+                    if (ex.residence_type) document.getElementById('residence_type').value = ex.residence_type;
+                    if (ex.hypertension !== undefined) document.getElementById('hypertension').value = ex.hypertension;
+                    if (ex.heart_disease !== undefined) document.getElementById('heart_disease').value = ex.heart_disease;
+                    if (ex.avg_glucose_level) { document.getElementById('avg_glucose_level').value = ex.avg_glucose_level; document.getElementById('glucoseValue').textContent = ex.avg_glucose_level; }
+                    if (ex.bmi) { document.getElementById('bmi').value = ex.bmi; document.getElementById('bmiValue').textContent = ex.bmi; }
+                    if (ex.work_type) document.getElementById('work_type').value = ex.work_type;
+                    if (ex.smoking_status) document.getElementById('smoking_status').value = ex.smoking_status;
+                    status.innerHTML = '<span style="color:var(--success)"><i class="fas fa-check-circle"></i> Form auto-filled successfully!</span>';
+                    setTimeout(() => toggleDashNLP(), 1500);
+                } else { throw new Error(data.error || 'Parsing failed'); }
+            } catch (e) { status.innerHTML = `<span style="color:var(--danger)"><i class="fas fa-exclamation-circle"></i> Error: ${e.message}</span>`; }
+            finally { btn.disabled = false; }
+        }
+
+        // Food recommendations display functions
+        function displayFoodRecommendations(food) {
+            const urgentAlert = document.getElementById('urgentAlert');
+            const urgentMessage = document.getElementById('urgentMessage');
+            if (food.urgent_message) { urgentMessage.textContent = food.urgent_message; urgentAlert.style.display = 'flex'; }
+            else urgentAlert.style.display = 'none';
+            document.getElementById('foodsToEat').innerHTML = (food.foods_to_eat || []).map(f => `<div class="food-item">${f}</div>`).join('');
+            document.getElementById('foodsToAvoid').innerHTML = (food.foods_to_avoid || []).map(f => `<div class="food-item">${f}</div>`).join('');
+            document.getElementById('generalAdvice').innerHTML = (food.general_advice || []).map(a => `<li>${a}</li>`).join('');
+        }
+
+        function displayIndianFoodRecommendations(indianFood) {
+            document.getElementById('indianFoodsMain').innerHTML = (indianFood || []).map(f => `<li>${f}</li>`).join('');
+        }
+
+        // History modal
+        function showDeleteAccountModal() { document.getElementById('deleteAccountModal').classList.add('show'); }
+        function hideDeleteAccountModal() { document.getElementById('deleteAccountModal').classList.remove('show'); }
+
+
+        // Doctor Consultancy Functions
+        function showDoctorConsultancyModal() {
+            document.getElementById('doctorListSection').style.display = 'block';
+            document.getElementById('appointmentFormSection').style.display = 'none';
+            document.getElementById('doctorListActions').style.display = 'flex';
+            document.getElementById('doctorConsultancyModal').classList.add('show');
+        }
+
+        function hideDoctorConsultancyModal() {
+            document.getElementById('doctorConsultancyModal').classList.remove('show');
+        }
+
+        function showAppointmentForm(doctorType) {
+            document.getElementById('doctorListSection').style.display = 'none';
+            document.getElementById('doctorListActions').style.display = 'none';
+            document.getElementById('appointmentFormSection').style.display = 'block';
+            document.getElementById('apptDoctorType').value = doctorType;
+            document.getElementById('appointmentFormTitle').textContent = `Book Appointment with ${doctorType}`;
+            
+            // Auto-fill age from dashboard
+            const currentAge = document.getElementById('age').value;
+            if (currentAge) {
+                document.getElementById('apptAge').value = currentAge;
+            }
+            
+            // Set default problem context based on doctor
+            const probSelect = document.getElementById('apptProblem');
+            if (doctorType.includes('Neurologist')) {
+                probSelect.value = 'Stroke Risk Assessment';
+            } else if (doctorType.includes('Cardiologist')) {
+                probSelect.value = 'Heart Health Checkup';
+            } else {
+                probSelect.value = 'General Health Advice';
+            }
+        }
+
+        function backToDoctorList() {
+            document.getElementById('doctorListSection').style.display = 'block';
+            document.getElementById('appointmentFormSection').style.display = 'none';
+            document.getElementById('doctorListActions').style.display = 'flex';
+        }
+
+        function submitAppointment(e) {
+            e.preventDefault();
+            const btn = e.target.querySelector('button[type="submit"]');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Booking...';
+            btn.disabled = true;
+            
+            // Simulate API booking delay
+            setTimeout(() => {
+                const doctorType = document.getElementById('apptDoctorType').value;
+                alert(`Appointment successfully booked with ${doctorType}!\nWe will contact you shortly to confirm the time.`);
+                hideDoctorConsultancyModal();
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+                e.target.reset();
+            }, 1200);
+        }
+
+        // Close consultancy modal when clicking outside
+        document.getElementById('doctorConsultancyModal')?.addEventListener('click', function (e) {
+            if (e.target === this) {
+                hideDoctorConsultancyModal();
+            }
+        });
+
+        // Delete Account Functions
+        // Wait for Firebase auth state to be resolved (avoids null currentUser race condition)
+        function getFirebaseUser() {
+            return new Promise((resolve) => {
+                const unsub = firebase.auth().onAuthStateChanged(user => {
+                    unsub(); resolve(user);
+                });
+            });
+        }
+
+        async function confirmDeleteAccount() {
+            const confirmBtn = document.getElementById('confirmDeleteBtn');
+            const originalText = confirmBtn.innerHTML;
+
+            try {
+                confirmBtn.disabled = true;
+                confirmBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Deleting...';
+
+                // Step 1: Delete Firebase account FIRST.
+                // Use onAuthStateChanged to wait for auth state — currentUser can be null
+                // immediately after SDK init even if the user is signed in.
+                const firebaseUser = await getFirebaseUser();
+
+                if (firebaseUser) {
+                    try {
+                        await firebaseUser.delete();
+                    }
+
+                    catch (firebaseError) {
+                        if (firebaseError.code === 'auth/requires-recent-login') {
+                            alert('For security reasons, please log out and log back in before deleting your account.');
+                            window.location.href = '/logout';
+                            return;
+                        }
+
+                        // For any other Firebase error, still proceed to clean up local data
+                        console.warn('Firebase delete warning:', firebaseError.message);
+                    }
+                }
+
+                // Step 2: Delete user data from the backend (uses Flask session)
+                const response = await fetch('/api/delete-account', {
+
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    alert('Your account has been permanently deleted.');
+                    window.location.href = '/';
+                }
+
+                else {
+                    throw new Error(result.error || 'Failed to delete account data');
+                }
+            }
+
+            catch (error) {
+                console.error('Error deleting account:', error);
+                alert('Error deleting account: ' + error.message);
+
+                confirmBtn.disabled = false;
+                confirmBtn.innerHTML = originalText;
+                hideDeleteAccountModal();
+            }
+        }
+
+        // Close modal when clicking outside
+        document.getElementById('deleteAccountModal')?.addEventListener('click', function (e) {
+            if (e.target === this) {
+                hideDeleteAccountModal();
+            }
+        });
+
+    </script>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script>
+        if (!firebase.apps.length) {
+            firebase.initializeApp({
+                apiKey: "{{ firebase_config.api_key }}",
+                authDomain: "{{ firebase_config.auth_domain }}",
+                projectId: "{{ firebase_config.project_id }}",
+                storageBucket: "{{ firebase_config.storage_bucket }}",
+                messagingSenderId: "{{ firebase_config.messaging_sender_id }}",
+                appId: "{{ firebase_config.app_id }}"
+            });
+        }
+    </script>
+    <!-- Theme Toggle -->
+    <script src="/static/js/theme-toggle.js"></script>
+</body>
+
+</html>

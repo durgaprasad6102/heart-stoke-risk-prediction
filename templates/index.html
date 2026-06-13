@@ -1,0 +1,1088 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🏥 Stroke Risk Prediction Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/static/css/theme-toggle.css">
+    <style>
+        :root {
+            --primary: #3B82F6;
+            --primary-dark: #1E40AF;
+            --primary-light: #DBEAFE;
+            --secondary: #06B6D4;
+            --accent: #F59E0B;
+            --success: #10B981;
+            --danger: #EF4444;
+            --warning: #F59E0B;
+            --dark: #0F172A;
+            --gray-900: #111827;
+            --gray-800: #1F2937;
+            --gray-700: #374151;
+            --gray-600: #4B5563;
+            --gray-200: #E5E7EB;
+            --gray-100: #F3F4F6;
+            --light: #F8FAFC;
+            --white: #FFFFFF;
+            --shadow: 0 20px 60px rgba(15, 23, 42, 0.08);
+            --shadow-lg: 0 25px 100px rgba(15, 23, 42, 0.12);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: var(--gray-900);
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            color: white;
+            padding: 50px 20px 40px;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: clamp(2rem, 5vw, 3.5rem);
+            font-weight: 800;
+            margin-bottom: 15px;
+            text-shadow: 2px 2px 8px rgba(0,0,0,0.2);
+            letter-spacing: -1px;
+        }
+
+        .header p {
+            font-size: clamp(0.95rem, 2vw, 1.2rem);
+            opacity: 0.95;
+            font-weight: 300;
+            letter-spacing: 0.5px;
+        }
+
+        /* Main Grid */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+
+        @media (max-width: 1024px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+                gap: 30px;
+            }
+        }
+
+        /* Cards */
+        .card {
+            background: var(--white);
+            border-radius: 25px;
+            padding: 40px;
+            box-shadow: var(--shadow-lg);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            backdrop-filter: blur(10px);
+        }
+
+        .card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 30px 90px rgba(15, 23, 42, 0.15);
+        }
+
+        @media (max-width: 640px) {
+            .card {
+                padding: 24px;
+                border-radius: 20px;
+            }
+        }
+
+        .card-title {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: var(--dark);
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            letter-spacing: -0.5px;
+        }
+
+        .card-title i {
+            color: var(--primary);
+            font-size: 1.8rem;
+            background: var(--primary-light);
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+        }
+
+        /* Form Styles */
+        .form-section {
+            margin-bottom: 30px;
+        }
+
+        .form-section:last-child {
+            margin-bottom: 0;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--gray-100);
+        }
+
+        .section-header i {
+            font-size: 1.3rem;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            background: var(--primary-light);
+            color: var(--primary);
+        }
+
+        .section-header h3 {
+            font-size: 1.1rem;
+            color: var(--gray-900);
+            font-weight: 600;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-weight: 600;
+            color: var(--gray-700);
+            margin-bottom: 10px;
+            font-size: 0.95rem;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid var(--gray-200);
+            border-radius: 12px;
+            font-size: 1rem;
+            font-family: inherit;
+            transition: all 0.3s ease;
+            background: var(--light);
+            color: var(--gray-900);
+        }
+
+        .form-group input::placeholder,
+        .form-group select::placeholder {
+            color: var(--gray-600);
+        }
+
+        .form-group input:hover,
+        .form-group select:hover {
+            border-color: var(--primary);
+            background: var(--white);
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: var(--white);
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+        }
+
+        .form-group input[type="range"] {
+            padding: 0;
+            height: 8px;
+            -webkit-appearance: none;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            border-radius: 5px;
+            border: none;
+            cursor: pointer;
+            margin-top: 8px;
+        }
+
+        .form-group input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 24px;
+            height: 24px;
+            background: var(--white);
+            border: 3px solid var(--primary);
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+            transition: all 0.2s ease;
+        }
+
+        .form-group input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.15);
+            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.5);
+        }
+
+        .form-group input[type="range"]::-moz-range-thumb {
+            width: 24px;
+            height: 24px;
+            background: var(--white);
+            border: 3px solid var(--primary);
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+            transition: all 0.2s ease;
+        }
+
+        .range-value {
+            display: inline-block;
+            background: var(--primary);
+            color: white;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+
+        /* Predict Button */
+        .predict-btn {
+            width: 100%;
+            padding: 18px 24px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            border: none;
+            border-radius: 14px;
+            font-size: 1.05rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-top: 30px;
+            letter-spacing: 0.5px;
+            box-shadow: 0 10px 30px rgba(59, 130, 246, 0.3);
+        }
+
+        .predict-btn:hover:not(.loading) {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 50px rgba(59, 130, 246, 0.5);
+        }
+
+        .predict-btn:active:not(.loading) {
+            transform: translateY(-1px);
+        }
+
+        .predict-btn.loading {
+            opacity: 0.8;
+            pointer-events: none;
+        }
+
+        /* Results Section */
+        .results-container {
+            display: none;
+            animation: fadeInUp 0.5s ease;
+        }
+
+        .results-container.show {
+            display: block;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .placeholder {
+            text-align: center;
+            padding: 80px 20px;
+            color: var(--gray-400);
+        }
+
+        .placeholder i {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            opacity: 0.4;
+        }
+
+        .placeholder p {
+            font-size: 1.05rem;
+            line-height: 1.6;
+            color: var(--gray-600);
+        }
+
+        .result-card {
+            background: linear-gradient(135deg, var(--light) 0%, var(--gray-100) 100%);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 20px;
+            border: 2px solid var(--gray-200);
+            border-left: 5px solid var(--primary);
+            transition: all 0.3s ease;
+        }
+
+        .result-card:hover {
+            transform: translateX(5px);
+        }
+
+        .result-card.low-risk {
+            border-left-color: var(--success);
+            background: linear-gradient(135deg, #ECFDF5 0%, #D1FAE5 100%);
+            border-color: #A7F3D0;
+        }
+
+        .result-card.medium-risk {
+            border-left-color: var(--warning);
+            background: linear-gradient(135deg, #FFFBEB 0%, #FEF3C7 100%);
+            border-color: #FDE68A;
+        }
+
+        .result-card.high-risk {
+            border-left-color: var(--danger);
+            background: linear-gradient(135deg, #FEF2F2 0%, #FEE2E2 100%);
+            border-color: #FECACA;
+        }
+
+        .result-card h3 {
+            font-size: 1.15rem;
+            color: var(--gray-900);
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 700;
+        }
+
+        .result-card h3 i {
+            font-size: 1.4rem;
+            background: rgba(59, 130, 246, 0.1);
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+            color: var(--primary);
+        }
+
+        .probability-bar {
+            height: 32px;
+            background: #E5E7EB;
+            border-radius: 16px;
+            overflow: hidden;
+            margin-bottom: 16px;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .probability-fill {
+            height: 100%;
+            border-radius: 16px;
+            transition: width 1s cubic-bezier(0.34, 1.56, 0.64, 1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 0.9rem;
+            min-width: 45px;
+        }
+
+        .probability-fill.low {
+            background: linear-gradient(90deg, var(--success), #34D399);
+        }
+
+        .probability-fill.medium {
+            background: linear-gradient(90deg, var(--warning), #FCD34D);
+        }
+
+        .probability-fill.high {
+            background: linear-gradient(90deg, var(--danger), #F87171);
+        }
+
+        .risk-badge {
+            display: inline-block;
+            padding: 8px 18px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .risk-badge.low {
+            background: var(--success);
+            color: white;
+        }
+
+        .risk-badge.medium {
+            background: var(--warning);
+            color: #78350F;
+        }
+
+        .risk-badge.high {
+            background: var(--danger);
+            color: white;
+        }
+
+        /* Ensemble Card */
+        .ensemble-card {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+            margin-top: 24px;
+            box-shadow: 0 20px 60px rgba(59, 130, 246, 0.3);
+        }
+
+        .ensemble-card h2 {
+            font-size: 1.4rem;
+            margin-bottom: 20px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .ensemble-probability {
+            font-size: 5rem;
+            font-weight: 800;
+            margin-bottom: 15px;
+            letter-spacing: -2px;
+            background: linear-gradient(135deg, #E0F2FE, #F0F9FF);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .ensemble-risk {
+            font-size: 1.15rem;
+            opacity: 0.95;
+            font-weight: 600;
+        }
+
+        /* Patient Summary */
+        .patient-summary {
+            background: var(--light);
+            border-radius: 16px;
+            padding: 24px;
+            margin-top: 24px;
+            border: 2px solid var(--gray-100);
+        }
+
+        .patient-summary h4 {
+            margin-bottom: 18px;
+            color: var(--gray-900);
+            font-size: 1.05rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .patient-summary h4 i {
+            color: var(--primary);
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+
+        @media (max-width: 640px) {
+            .summary-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 16px;
+            background: white;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            border: 1px solid var(--gray-200);
+            transition: all 0.2s ease;
+        }
+
+        .summary-item:hover {
+            border-color: var(--primary);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.1);
+        }
+
+        .summary-item span:first-child {
+            color: var(--gray-600);
+            font-weight: 500;
+        }
+
+        .summary-item span:last-child {
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        /* Info Section */
+        .info-section {
+            background: var(--white);
+            border-radius: 25px;
+            padding: 40px;
+            box-shadow: var(--shadow-lg);
+        }
+
+        @media (max-width: 640px) {
+            .info-section {
+                padding: 24px;
+            }
+        }
+
+        .info-section .card-title {
+            margin-bottom: 35px;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 25px;
+        }
+
+        @media (max-width: 768px) {
+            .info-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 20px;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .info-card {
+            text-align: center;
+            padding: 30px;
+            background: linear-gradient(135deg, var(--light) 0%, var(--gray-100) 100%);
+            border-radius: 18px;
+            border: 2px solid var(--gray-200);
+            transition: all 0.3s ease;
+        }
+
+        .info-card:hover {
+            transform: translateY(-8px);
+            border-color: var(--primary);
+            box-shadow: 0 15px 40px rgba(59, 130, 246, 0.1);
+        }
+
+        .info-card i {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            display: inline-block;
+        }
+
+        .info-card.low i {
+            color: var(--success);
+        }
+
+        .info-card.medium i {
+            color: var(--warning);
+        }
+
+        .info-card.high i {
+            color: var(--danger);
+        }
+
+        .info-card h4 {
+            margin-bottom: 12px;
+            color: var(--gray-900);
+            font-size: 1.1rem;
+            font-weight: 700;
+        }
+
+        .info-card p {
+            font-size: 0.9rem;
+            color: var(--gray-600);
+            line-height: 1.6;
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            color: white;
+            padding: 30px;
+            margin-top: 40px;
+            opacity: 0.85;
+            font-size: 0.95rem;
+            font-weight: 300;
+        }
+
+        /* Loading Spinner */
+        .spinner {
+            width: 24px;
+            height: 24px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Error Message */
+        .error-message {
+            background: #FEE2E2;
+            color: var(--danger);
+            padding: 16px 20px;
+            border-radius: 12px;
+            margin-top: 20px;
+            display: none;
+            border: 2px solid #FECACA;
+            font-weight: 500;
+            animation: slideDown 0.3s ease;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 640px) {
+            body {
+                padding: 16px;
+            }
+
+            .header {
+                padding: 35px 16px 30px;
+                margin-bottom: 30px;
+            }
+
+            .main-grid {
+                gap: 24px;
+            }
+
+            .card-title {
+                font-size: 1.35rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>🏥 Stroke Risk Prediction</h1>
+            <p>Advanced AI-powered analysis for stroke risk assessment</p>
+        </div>
+
+        <!-- Main Grid -->
+        <div class="main-grid">
+            <!-- Input Form -->
+            <div class="card">
+                <h2 class="card-title"><i class="fas fa-user-edit"></i> Patient Information</h2>
+                
+                <form id="predictionForm">
+                    <!-- Personal Information -->
+                    <div class="form-section">
+                        <div class="section-header">
+                            <i class="fas fa-user"></i>
+                            <h3>Personal Details</h3>
+                        </div>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>Age <span class="range-value" id="ageValue">50</span></label>
+                                <input type="range" id="age" name="age" min="0" max="100" value="50">
+                            </div>
+                            <div class="form-group">
+                                <label>Gender</label>
+                                <select id="gender" name="gender">
+                                    <option value="Female">Female</option>
+                                    <option value="Male">Male</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Ever Married</label>
+                                <select id="ever_married" name="ever_married">
+                                    <option value="Yes">Yes</option>
+                                    <option value="No">No</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Residence Type</label>
+                                <select id="residence_type" name="residence_type">
+                                    <option value="Urban">Urban</option>
+                                    <option value="Rural">Rural</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Health Information -->
+                    <div class="form-section">
+                        <div class="section-header">
+                            <i class="fas fa-heartbeat"></i>
+                            <h3>Health Information</h3>
+                        </div>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>Hypertension</label>
+                                <select id="hypertension" name="hypertension">
+                                    <option value="0">No</option>
+                                    <option value="1">Yes</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Heart Disease</label>
+                                <select id="heart_disease" name="heart_disease">
+                                    <option value="0">No</option>
+                                    <option value="1">Yes</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Avg Glucose Level <span class="range-value" id="glucoseValue">100</span></label>
+                                <input type="range" id="avg_glucose_level" name="avg_glucose_level" min="50" max="300" value="100">
+                            </div>
+                            <div class="form-group">
+                                <label>BMI <span class="range-value" id="bmiValue">25.0</span></label>
+                                <input type="range" id="bmi" name="bmi" min="10" max="60" value="25" step="0.1">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Lifestyle Information -->
+                    <div class="form-section">
+                        <div class="section-header">
+                            <i class="fas fa-briefcase"></i>
+                            <h3>Lifestyle Information</h3>
+                        </div>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>Work Type</label>
+                                <select id="work_type" name="work_type">
+                                    <option value="Private">Private</option>
+                                    <option value="Self-employed">Self-employed</option>
+                                    <option value="Govt_job">Government Job</option>
+                                    <option value="children">Children</option>
+                                    <option value="Never_worked">Never Worked</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Smoking Status</label>
+                                <select id="smoking_status" name="smoking_status">
+                                    <option value="never smoked">Never Smoked</option>
+                                    <option value="formerly smoked">Formerly Smoked</option>
+                                    <option value="smokes">Currently Smokes</option>
+                                    <option value="Unknown">Unknown</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="predict-btn" id="predictBtn">
+                        <i class="fas fa-magic"></i>
+                        <span>Predict Stroke Risk</span>
+                    </button>
+                </form>
+
+                <div class="error-message" id="errorMessage"></div>
+            </div>
+
+            <!-- Results Section -->
+            <div class="card">
+                <h2 class="card-title"><i class="fas fa-chart-bar"></i> Results</h2>
+                
+                <div class="placeholder" id="placeholder">
+                    <i class="fas fa-arrow-left"></i>
+                    <p>Enter patient information and click<br><strong>Predict Stroke Risk</strong> to see results</p>
+                </div>
+
+                <div class="results-container" id="resultsContainer">
+                    <!-- Model A Result -->
+                    <div class="result-card" id="resultA">
+                        <h3><i class="fas fa-brain"></i> Model A (Original Data)</h3>
+                        <div class="probability-bar">
+                            <div class="probability-fill" id="probFillA" style="width: 0%;">0%</div>
+                        </div>
+                        <span class="risk-badge" id="riskBadgeA">-</span>
+                    </div>
+
+                    <!-- Model B Result -->
+                    <div class="result-card" id="resultB">
+                        <h3><i class="fas fa-robot"></i> Model B (Synthetic Data)</h3>
+                        <div class="probability-bar">
+                            <div class="probability-fill" id="probFillB" style="width: 0%;">0%</div>
+                        </div>
+                        <span class="risk-badge" id="riskBadgeB">-</span>
+                    </div>
+
+                    <!-- Ensemble Result -->
+                    <div class="ensemble-card" id="ensembleCard">
+                        <h2>🎯 Combined Prediction</h2>
+                        <div class="ensemble-probability" id="ensembleProb">--%</div>
+                        <div class="ensemble-risk" id="ensembleRisk">Risk Level: --</div>
+                    </div>
+
+                    <!-- Patient Summary -->
+                    <div class="patient-summary">
+                        <h4><i class="fas fa-clipboard-list"></i> Patient Summary</h4>
+                        <div class="summary-grid" id="patientSummary">
+                            <!-- Filled by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Info Section -->
+        <div class="info-section">
+            <h2 class="card-title"><i class="fas fa-info-circle"></i> Understanding Stroke Risk Levels</h2>
+            <div class="info-grid">
+                <div class="info-card low">
+                    <i class="fas fa-smile"></i>
+                    <h4>Low Risk</h4>
+                    <p>Below 30% probability. Maintain healthy lifestyle and regular check-ups.</p>
+                </div>
+                <div class="info-card medium">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <h4>Medium Risk</h4>
+                    <p>30-70% probability. Consider lifestyle modifications and medical consultation.</p>
+                </div>
+                <div class="info-card high">
+                    <i class="fas fa-alert"></i>
+                    <h4>High Risk</h4>
+                    <p>Above 70% probability. Consult healthcare provider immediately for intervention.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <p>🏥 Stroke Risk Prediction Dashboard | Data Science & Healthcare Innovation | 2024</p>
+        </div>
+    </div>
+
+    <script>
+        // Range input handlers
+        const ageInput = document.getElementById('age');
+        const ageValue = document.getElementById('ageValue');
+        const glucoseInput = document.getElementById('avg_glucose_level');
+        const glucoseValue = document.getElementById('glucoseValue');
+        const bmiInput = document.getElementById('bmi');
+        const bmiValue = document.getElementById('bmiValue');
+
+        ageInput.addEventListener('input', (e) => {
+            ageValue.textContent = e.target.value;
+        });
+
+        glucoseInput.addEventListener('input', (e) => {
+            glucoseValue.textContent = e.target.value;
+        });
+
+        bmiInput.addEventListener('input', (e) => {
+            bmiValue.textContent = parseFloat(e.target.value).toFixed(1);
+        });
+
+        // Form submission
+        const form = document.getElementById('predictionForm');
+        const predictBtn = document.getElementById('predictBtn');
+        const resultsContainer = document.getElementById('resultsContainer');
+        const placeholder = document.getElementById('placeholder');
+        const errorMessage = document.getElementById('errorMessage');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            // Validate form
+            const age = parseFloat(ageInput.value);
+            if (age < 0 || age > 120) {
+                showError('Please enter a valid age between 0 and 120');
+                return;
+            }
+
+            // Show loading state
+            predictBtn.classList.add('loading');
+            predictBtn.innerHTML = '<div class="spinner"></div><span>Analyzing...</span>';
+            errorMessage.classList.remove('show');
+
+            try {
+                // Simulate API call
+                await new Promise(resolve => setTimeout(resolve, 1500));
+
+                // Generate predictions
+                const predictions = generatePredictions();
+                displayResults(predictions);
+                
+                placeholder.style.display = 'none';
+                resultsContainer.classList.add('show');
+            } catch (error) {
+                showError('An error occurred. Please try again.');
+            } finally {
+                predictBtn.classList.remove('loading');
+                predictBtn.innerHTML = '<i class="fas fa-magic"></i><span>Predict Stroke Risk</span>';
+            }
+        });
+
+        function generatePredictions() {
+            const age = parseFloat(ageInput.value);
+            const hypertension = parseInt(document.getElementById('hypertension').value);
+            const heart_disease = parseInt(document.getElementById('heart_disease').value);
+            const glucose = parseFloat(glucoseInput.value);
+            const bmi = parseFloat(bmiInput.value);
+
+            // Simple risk calculation
+            let risk = 0;
+            risk += (age / 100) * 30;
+            risk += hypertension * 20;
+            risk += heart_disease * 15;
+            risk += ((glucose - 80) / 220) * 20;
+            risk += ((bmi - 18.5) / 15) * 15;
+
+            risk = Math.max(0, Math.min(100, risk));
+
+            // Add some variation for models
+            const modelA = risk + (Math.random() - 0.5) * 15;
+            const modelB = risk + (Math.random() - 0.5) * 15;
+            const ensemble = (modelA + modelB) / 2;
+
+            return {
+                modelA: Math.max(0, Math.min(100, modelA)),
+                modelB: Math.max(0, Math.min(100, modelB)),
+                ensemble: Math.max(0, Math.min(100, ensemble))
+            };
+        }
+
+        function displayResults(predictions) {
+            const modelA = predictions.modelA;
+            const modelB = predictions.modelB;
+            const ensemble = predictions.ensemble;
+
+            // Update Model A
+            updateModelDisplay('A', modelA);
+            updateModelDisplay('B', modelB);
+
+            // Update Ensemble
+            document.getElementById('ensembleProb').textContent = ensemble.toFixed(1) + '%';
+            document.getElementById('ensembleRisk').textContent = 'Risk Level: ' + getRiskLevel(ensemble);
+
+            // Update Patient Summary
+            updatePatientSummary();
+        }
+
+        function updateModelDisplay(model, probability) {
+            const probFill = document.getElementById(`probFill${model}`);
+            const riskBadge = document.getElementById(`riskBadge${model}`);
+            const resultCard = document.getElementById(`result${model}`);
+
+            const riskLevel = getRiskLevel(probability);
+
+            probFill.textContent = probability.toFixed(1) + '%';
+            probFill.style.width = probability + '%';
+            probFill.className = `probability-fill ${getRiskClass(probability)}`;
+            
+            riskBadge.textContent = riskLevel;
+            riskBadge.className = `risk-badge ${getRiskClass(probability)}`;
+
+            resultCard.className = `result-card ${getRiskClass(probability)}-risk`;
+        }
+
+        function getRiskLevel(probability) {
+            if (probability < 30) return 'Low Risk';
+            if (probability < 70) return 'Medium Risk';
+            return 'High Risk';
+        }
+
+        function getRiskClass(probability) {
+            if (probability < 30) return 'low';
+            if (probability < 70) return 'medium';
+            return 'high';
+        }
+
+        function updatePatientSummary() {
+            const summary = document.getElementById('patientSummary');
+            const data = {
+                'Age': ageInput.value + ' years',
+                'Gender': document.getElementById('gender').value,
+                'Married': document.getElementById('ever_married').value,
+                'Residence': document.getElementById('residence_type').value,
+                'Hypertension': document.getElementById('hypertension').value === '1' ? 'Yes' : 'No',
+                'Heart Disease': document.getElementById('heart_disease').value === '1' ? 'Yes' : 'No',
+                'Glucose': glucoseInput.value + ' mg/dL',
+                'BMI': bmiInput.value
+            };
+
+            summary.innerHTML = Object.entries(data).map(([key, value]) => `
+                <div class="summary-item">
+                    <span>${key}</span>
+                    <span>${value}</span>
+                </div>
+            `).join('');
+        }
+
+        function showError(message) {
+            errorMessage.textContent = message;
+            errorMessage.classList.add('show');
+            setTimeout(() => {
+                errorMessage.classList.remove('show');
+            }, 5000);
+        }
+    </script>
+    <script src="/static/js/theme-toggle.js"></script>
+</body>
+</html>

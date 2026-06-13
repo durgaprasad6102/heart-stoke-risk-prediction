@@ -1,0 +1,1619 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doctor Recommendations - StrokeGuard AI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/static/css/theme-toggle.css">
+    <style>
+        :root {
+            --primary: #0EA5E9;
+            --accent: #06D6A0;
+            --accent-alt: #8B5CF6;
+            --success: #10B981;
+            --danger: #F43F5E;
+            --warning: #F59E0B;
+            --bg-dark: #0B1120;
+            --bg-card: rgba(15, 23, 42, 0.85);
+            --bg-elevated: rgba(30, 41, 59, 0.6);
+            --bg-input: rgba(30, 41, 59, 0.8);
+            --border: rgba(56, 189, 248, 0.12);
+            --border-subtle: rgba(56, 189, 248, 0.06);
+            --border-focus: rgba(14, 165, 233, 0.5);
+            --text-primary: #F1F5F9;
+            --text-secondary: #94A3B8;
+            --text-muted: #64748B;
+            --primary-glow: rgba(14, 165, 233, 0.25);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-dark);
+            min-height: 100vh;
+            color: var(--text-primary);
+        }
+
+        .bg-effects {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+            background: radial-gradient(ellipse 80% 50% at 50% -20%, rgba(14, 165, 233, 0.12), transparent), radial-gradient(ellipse 60% 40% at 90% 100%, rgba(6, 214, 160, 0.08), transparent);
+        }
+
+        .grid-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+            background-image: linear-gradient(rgba(14, 165, 233, 0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(14, 165, 233, 0.02) 1px, transparent 1px);
+            background-size: 60px 60px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Nav */
+        .navbar {
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 12px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 28px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .nav-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 1.2rem;
+            font-weight: 800;
+            color: var(--text-primary);
+        }
+
+        .nav-brand-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            color: white;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .nav-link {
+            padding: 8px 16px;
+            background: transparent;
+            border: 1px solid transparent;
+            border-radius: 10px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.85rem;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 7px;
+        }
+
+        .nav-link:hover {
+            background: var(--bg-elevated);
+            color: var(--text-primary);
+            border-color: var(--border);
+        }
+
+        .nav-link.active {
+            background: linear-gradient(135deg, rgba(14, 165, 233, 0.15), rgba(6, 214, 160, 0.08));
+            color: var(--primary);
+            border-color: rgba(14, 165, 233, 0.25);
+        }
+
+        .nav-link.logout {
+            color: var(--danger);
+        }
+
+        .nav-link.logout:hover {
+            background: rgba(244, 63, 94, 0.1);
+            border-color: rgba(244, 63, 94, 0.2);
+        }
+
+        .nav-link.admin-link {
+            color: var(--accent-alt);
+        }
+
+        .user-badge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 14px;
+            background: rgba(14, 165, 233, 0.08);
+            border: 1px solid rgba(14, 165, 233, 0.15);
+            border-radius: 10px;
+            color: var(--primary);
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 24px;
+            background: var(--bg-card);
+            padding: 6px;
+            border-radius: 14px;
+            border: 1px solid var(--border);
+            width: fit-content;
+        }
+
+        .tab-btn {
+            padding: 10px 22px;
+            border: none;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 0.88rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: transparent;
+            color: var(--text-secondary);
+        }
+
+        .tab-btn.active {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: white;
+            box-shadow: 0 4px 16px rgba(14, 165, 233, 0.3);
+        }
+
+        .tab-btn:hover:not(.active) {
+            background: var(--bg-elevated);
+            color: var(--text-primary);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.4s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(14px)
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0)
+            }
+        }
+
+        /* Cards */
+        .card {
+            background: var(--bg-card);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 32px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            margin-bottom: 24px;
+        }
+
+        .card-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .card-subtitle {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-bottom: 24px;
+            line-height: 1.6;
+        }
+
+        .icon-box {
+            width: 42px;
+            height: 42px;
+            background: linear-gradient(135deg, rgba(14, 165, 233, 0.15), rgba(6, 214, 160, 0.08));
+            border: 1px solid rgba(14, 165, 233, 0.2);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+
+        /* NLP Input */
+        .nlp-hint {
+            background: rgba(14, 165, 233, 0.06);
+            border: 1px solid rgba(14, 165, 233, 0.12);
+            border-radius: 10px;
+            padding: 14px 18px;
+            margin-bottom: 16px;
+            font-size: 0.84rem;
+            color: var(--text-secondary);
+            line-height: 1.7;
+        }
+
+        .nlp-hint strong {
+            color: var(--primary);
+        }
+
+        .nlp-hint code {
+            background: rgba(14, 165, 233, 0.1);
+            border-radius: 4px;
+            padding: 1px 5px;
+            font-family: monospace;
+            color: var(--accent);
+        }
+
+        .nlp-textarea {
+            width: 100%;
+            min-height: 90px;
+            padding: 14px 18px;
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            color: var(--text-primary);
+            font-family: 'Inter', sans-serif;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            resize: vertical;
+            transition: all 0.3s ease;
+        }
+
+        .nlp-textarea:focus {
+            outline: none;
+            border-color: var(--border-focus);
+            background: var(--bg-elevated);
+            box-shadow: 0 0 0 3px var(--primary-glow);
+        }
+
+        .nlp-textarea::placeholder {
+            color: var(--text-muted);
+        }
+
+        /* Extracted tags */
+        .extracted-preview {
+            display: none;
+            background: var(--bg-elevated);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 12px 16px;
+            margin-top: 10px;
+            margin-bottom: 16px;
+        }
+
+        .extracted-preview.show {
+            display: block;
+        }
+
+        .ext-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 7px;
+            margin-top: 8px;
+        }
+
+        .ext-tag {
+            padding: 4px 11px;
+            background: rgba(14, 165, 233, 0.1);
+            border: 1px solid rgba(14, 165, 233, 0.2);
+            border-radius: 8px;
+            font-size: 0.79rem;
+            color: var(--text-primary);
+        }
+
+        .ext-tag.miss {
+            background: rgba(245, 158, 11, 0.07);
+            border-color: rgba(245, 158, 11, 0.2);
+            color: var(--text-muted);
+        }
+
+        /* Accordion for manual form */
+        .accordion-toggle {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            padding: 12px 16px;
+            background: var(--bg-elevated);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            color: var(--text-secondary);
+            font-weight: 600;
+            font-size: 0.88rem;
+            transition: all 0.3s ease;
+            margin-bottom: 4px;
+        }
+
+        .accordion-toggle:hover {
+            background: var(--bg-input);
+            color: var(--text-primary);
+        }
+
+        .accordion-toggle.open {
+            background: rgba(14, 165, 233, 0.08);
+            border-color: rgba(14, 165, 233, 0.2);
+            color: var(--primary);
+        }
+
+        .accordion-body {
+            display: none;
+            padding: 20px 0 4px;
+        }
+
+        .accordion-body.open {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        /* Form elements */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 7px;
+            font-size: 0.82rem;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .form-group input[type=range] {
+            width: 100%;
+            height: 6px;
+            -webkit-appearance: none;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            border-radius: 4px;
+            border: none;
+            cursor: pointer;
+            margin-top: 6px;
+        }
+
+        .form-group input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            background: var(--text-primary);
+            border: 2px solid var(--primary);
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .form-group select {
+            width: 100%;
+            padding: 10px 14px;
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            color: var(--text-primary);
+            font-size: 0.9rem;
+            cursor: pointer;
+            -webkit-appearance: none;
+            transition: all 0.3s ease;
+        }
+
+        .form-group select:focus {
+            outline: none;
+            border-color: var(--border-focus);
+        }
+
+        .range-value {
+            display: inline-block;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: white;
+            padding: 2px 9px;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 0.73rem;
+            margin-left: 8px;
+        }
+
+        /* Buttons */
+        .btn-primary {
+            padding: 13px 26px;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-weight: 700;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 9px;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 28px rgba(14, 165, 233, 0.3);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            padding: 11px 20px;
+            background: var(--bg-elevated);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            color: var(--text-secondary);
+            font-weight: 600;
+            font-size: 0.87rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-secondary:hover {
+            background: var(--bg-input);
+            color: var(--text-primary);
+        }
+
+        .btn-row {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+
+        /* Results */
+        .results-section {
+            display: none;
+            margin-top: 28px;
+        }
+
+        .results-section.show {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .risk-badge-large {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            padding: 18px 32px;
+            border-radius: 14px;
+            font-weight: 700;
+            font-size: 1.2rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 20px;
+            width: 100%;
+        }
+
+        .risk-badge-large.low {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(16, 185, 129, 0.08));
+            color: #059669;
+            border: 2px solid rgba(16, 185, 129, 0.4);
+        }
+
+        .risk-badge-large.medium {
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(245, 158, 11, 0.08));
+            color: #B45309;
+            border: 2px solid rgba(245, 158, 11, 0.4);
+        }
+
+        .risk-badge-large.high {
+            background: linear-gradient(135deg, rgba(244, 63, 94, 0.2), rgba(244, 63, 94, 0.08));
+            color: #BE123C;
+            border: 2px solid rgba(244, 63, 94, 0.4);
+            animation: pulseRisk 2s infinite;
+        }
+
+        body[data-theme="dark"] .risk-badge-large.low {
+            color: #34D399;
+        }
+
+        body[data-theme="dark"] .risk-badge-large.medium {
+            color: #FCD34D;
+        }
+
+        body[data-theme="dark"] .risk-badge-large.high {
+            color: #FB7185;
+        }
+
+        @keyframes pulseRisk {
+
+            0%,
+            100% {
+                box-shadow: 0 0 0 0 rgba(244, 63, 94, 0.4)
+            }
+
+            50% {
+                box-shadow: 0 0 30px 10px rgba(244, 63, 94, 0.1)
+            }
+        }
+
+        /* Consult banner */
+        .consult-banner {
+            border-radius: 14px;
+            padding: 18px 22px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+        }
+
+        .consult-banner.low {
+            background: rgba(16, 185, 129, 0.08);
+            border: 1.5px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .consult-banner.medium {
+            background: rgba(245, 158, 11, 0.08);
+            border: 1.5px solid rgba(245, 158, 11, 0.35);
+        }
+
+        .consult-banner.high {
+            background: rgba(244, 63, 94, 0.1);
+            border: 1.5px solid rgba(244, 63, 94, 0.4);
+        }
+
+        .consult-icon {
+            font-size: 1.8rem;
+            flex-shrink: 0;
+        }
+
+        .consult-text h4 {
+            font-size: 0.98rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .consult-banner.low .consult-text h4 {
+            color: #34D399;
+        }
+
+        .consult-banner.medium .consult-text h4 {
+            color: #FCD34D;
+        }
+
+        .consult-banner.high .consult-text h4 {
+            color: #FB7185;
+        }
+
+        .consult-text p {
+            font-size: 0.88rem;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        /* Doctor cards */
+        .doctor-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .doctor-card {
+            background: var(--bg-elevated);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 16px 18px;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .doctor-card::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+        }
+
+        .doctor-card.low::before {
+            background: var(--success);
+        }
+
+        .doctor-card.medium::before {
+            background: var(--warning);
+        }
+
+        .doctor-card.high::before {
+            background: var(--danger);
+        }
+
+        .doctor-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .dc-header {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            margin-bottom: 8px;
+        }
+
+        .dc-icon {
+            width: 34px;
+            height: 34px;
+            border-radius: 9px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.95rem;
+            flex-shrink: 0;
+        }
+
+        .doctor-card.low .dc-icon {
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--success);
+            border: 1px solid rgba(16, 185, 129, 0.25);
+        }
+
+        .doctor-card.medium .dc-icon {
+            background: rgba(245, 158, 11, 0.15);
+            color: var(--warning);
+            border: 1px solid rgba(245, 158, 11, 0.25);
+        }
+
+        .doctor-card.high .dc-icon {
+            background: rgba(244, 63, 94, 0.15);
+            color: var(--danger);
+            border: 1px solid rgba(244, 63, 94, 0.25);
+        }
+
+        .dc-name {
+            font-weight: 700;
+            font-size: 0.9rem;
+            color: var(--text-primary);
+        }
+
+        .dc-reason {
+            font-size: 0.81rem;
+            color: var(--text-secondary);
+            line-height: 1.5;
+            margin-bottom: 8px;
+        }
+
+        .urg-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 3px 9px;
+            border-radius: 6px;
+            font-size: 0.73rem;
+            font-weight: 700;
+        }
+
+        .urg-badge.low {
+            background: rgba(16, 185, 129, 0.1);
+            color: #34D399;
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+
+        .urg-badge.medium {
+            background: rgba(245, 158, 11, 0.1);
+            color: #FCD34D;
+            border: 1px solid rgba(245, 158, 11, 0.2);
+        }
+
+        .urg-badge.high {
+            background: rgba(244, 63, 94, 0.1);
+            color: #FB7185;
+            border: 1px solid rgba(244, 63, 94, 0.2);
+        }
+
+        /* Rec sections */
+        .rec-section {
+            background: var(--bg-elevated);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 18px;
+            margin-bottom: 14px;
+        }
+
+        .rec-section h3 {
+            font-size: 0.97rem;
+            color: var(--text-primary);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border-subtle);
+        }
+
+        .rec-section h3 i {
+            color: var(--primary);
+        }
+
+        .rec-list {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .rec-list li {
+            padding: 8px 13px;
+            background: var(--bg-elevated);
+            border: 1px solid var(--border);
+            border-radius: 9px;
+            margin-bottom: 6px;
+            color: var(--text-primary);
+            font-size: 0.86rem;
+            display: flex;
+            align-items: flex-start;
+            gap: 9px;
+            line-height: 1.6;
+        }
+
+        .rec-list li::before {
+            content: '\f0a4';
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            color: var(--primary);
+            font-size: 0.72rem;
+            margin-top: 4px;
+            flex-shrink: 0;
+        }
+
+        .rec-list.indian li {
+            background: rgba(6, 214, 160, 0.06);
+            border-color: rgba(6, 214, 160, 0.18);
+        }
+
+        .rec-list.avoid li {
+            background: rgba(244, 63, 94, 0.06);
+            border-color: rgba(244, 63, 94, 0.18);
+        }
+
+        .rec-list.avoid li::before {
+            content: '\f00d';
+            color: var(--danger);
+        }
+
+        .rec-list.critical li::before {
+            color: var(--danger);
+        }
+
+        /* History */
+        .history-list {
+            display: flex;
+            flex-direction: column;
+            gap: 11px;
+        }
+
+        .history-item {
+            background: var(--bg-elevated);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 16px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .history-item:hover {
+            border-color: rgba(14, 165, 233, 0.3);
+            transform: translateX(4px);
+            box-shadow: 0 4px 16px rgba(14, 165, 233, 0.08);
+        }
+
+        .history-item.low {
+            border-left: 4px solid var(--success);
+        }
+
+        .history-item.medium {
+            border-left: 4px solid var(--warning);
+        }
+
+        .history-item.high {
+            border-left: 4px solid var(--danger);
+        }
+
+        .hi-info {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .hi-date {
+            font-weight: 600;
+            color: var(--text-primary);
+            font-size: 0.9rem;
+        }
+
+        .hi-meta {
+            display: flex;
+            gap: 12px;
+            font-size: 0.79rem;
+            color: var(--text-muted);
+            flex-wrap: wrap;
+        }
+
+        .hi-meta span {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .hi-actions {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            flex-wrap: wrap;
+        }
+
+        .hist-risk-badge {
+            padding: 4px 11px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+        }
+
+        .hist-risk-badge.low {
+            background: rgba(16, 185, 129, 0.15);
+            color: #34D399;
+            border: 1px solid rgba(16, 185, 129, 0.25);
+        }
+
+        .hist-risk-badge.medium {
+            background: rgba(245, 158, 11, 0.15);
+            color: #FCD34D;
+            border: 1px solid rgba(245, 158, 11, 0.25);
+        }
+
+        .hist-risk-badge.high {
+            background: rgba(244, 63, 94, 0.15);
+            color: #FB7185;
+            border: 1px solid rgba(244, 63, 94, 0.25);
+        }
+
+        .view-btn {
+            padding: 7px 14px;
+            background: rgba(14, 165, 233, 0.1);
+            border: 1px solid rgba(14, 165, 233, 0.2);
+            color: var(--primary);
+            border-radius: 9px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.8rem;
+        }
+
+        .view-btn:hover {
+            background: rgba(14, 165, 233, 0.2);
+            transform: translateY(-1px);
+        }
+
+        .pdf-btn {
+            padding: 7px 14px;
+            background: rgba(6, 214, 160, 0.1);
+            border: 1px solid rgba(6, 214, 160, 0.2);
+            color: var(--accent);
+            border-radius: 9px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.8rem;
+        }
+
+        .pdf-btn:hover {
+            background: rgba(6, 214, 160, 0.2);
+            transform: translateY(-1px);
+        }
+
+        /* Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal-overlay.show {
+            display: flex;
+        }
+
+        .modal-box {
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 780px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+            animation: fadeIn 0.3s ease;
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 13px;
+            right: 13px;
+            width: 34px;
+            height: 34px;
+            border: 1px solid var(--border);
+            background: var(--bg-elevated);
+            border-radius: 9px;
+            cursor: pointer;
+            font-size: 1rem;
+            color: var(--text-muted);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-close:hover {
+            background: rgba(244, 63, 94, 0.1);
+            color: var(--danger);
+        }
+
+        .modal-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 18px;
+            display: flex;
+            align-items: center;
+            gap: 9px;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(155px, 1fr));
+            gap: 7px;
+            margin-bottom: 14px;
+        }
+
+        .info-item {
+            background: var(--bg-elevated);
+            border: 1px solid var(--border-subtle);
+            padding: 9px 13px;
+            border-radius: 9px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .info-item span:first-child {
+            color: var(--text-muted);
+            font-size: 0.79rem;
+        }
+
+        .info-item span:last-child {
+            font-weight: 600;
+            color: var(--primary);
+            font-size: 0.8rem;
+        }
+
+        /* Loading */
+        .loading-overlay {
+            display: none;
+            position: absolute;
+            inset: 0;
+            background: rgba(11, 17, 32, 0.65);
+            backdrop-filter: blur(4px);
+            border-radius: 20px;
+            z-index: 10;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .loading-overlay.show {
+            display: flex;
+        }
+
+        .spinner {
+            width: 42px;
+            height: 42px;
+            border: 4px solid var(--border);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg)
+            }
+        }
+
+        .input-card {
+            position: relative;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-muted);
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 16px;
+            opacity: 0.2;
+        }
+
+        .empty-state h3 {
+            font-size: 1.1rem;
+            margin-bottom: 8px;
+            color: var(--text-secondary);
+        }
+
+        @media(max-width:900px) {
+            .navbar {
+                flex-direction: column;
+                gap: 12px;
+                padding: 14px;
+            }
+
+            .nav-links {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+
+            .doctor-cards {
+                grid-template-columns: 1fr;
+            }
+
+            .history-item {
+                flex-direction: column;
+                gap: 10px;
+                align-items: flex-start;
+            }
+
+            .hi-actions {
+                width: 100%;
+                justify-content: flex-start;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="bg-effects"></div>
+    <div class="grid-overlay"></div>
+    <div class="container">
+        <!-- Nav -->
+        <nav class="navbar">
+            <div class="nav-brand">
+                <div class="nav-brand-icon"><i class="fas fa-heartbeat"></i></div>
+                <span>StrokeGuard AI</span>
+            </div>
+            <div class="nav-links">
+                <a href="/dashboard" class="nav-link"><i class="fas fa-chart-line"></i> Dashboard</a>
+                <a href="/history" class="nav-link"><i class="fas fa-clock-rotate-left"></i> History</a>
+                <a href="/medications" class="nav-link"><i class="fas fa-capsules"></i> Medications</a>
+                <a href="/doctor-recommendations" class="nav-link active"><i class="fas fa-user-doctor"></i> Doctor
+                    Advice</a>
+                {% if role == 'admin' %}<a href="/admin" class="nav-link" style="color:var(--accent-alt);"><i
+                        class="fas fa-shield-halved"></i> Admin</a>{% endif %}
+                <div class="user-badge"><i class="fas fa-user-circle"></i> {{ user }}</div>
+                <a href="/logout" class="nav-link logout"><i class="fas fa-right-from-bracket"></i> Logout</a>
+            </div>
+        </nav>
+
+        <!-- Tabs -->
+        <div class="tabs">
+            <button class="tab-btn active" id="tabAnalyze" onclick="switchTab('analyze')">
+                <i class="fas fa-wand-magic-sparkles"></i> Analyze Health
+            </button>
+            <button class="tab-btn" id="tabHistory" onclick="switchTab('history')">
+                <i class="fas fa-clock-rotate-left"></i> Advice History
+                {% if advice_history %}<span
+                    style="background:var(--primary);color:white;border-radius:10px;padding:1px 7px;font-size:0.71rem;">{{
+                    advice_history|length }}</span>{% endif %}
+            </button>
+        </div>
+
+        <!-- TAB: Analyze -->
+        <div class="tab-content active" id="tabContentAnalyze">
+            <div class="card input-card">
+                <div class="loading-overlay" id="loadingOverlay">
+                    <div class="spinner"></div>
+                    <div style="color:var(--text-secondary);font-size:0.88rem;font-weight:600;">Analyzing your health
+                        data…</div>
+                </div>
+                <h2 class="card-title">
+                    <div class="icon-box"><i class="fas fa-user-doctor"></i></div> Doctor Recommendations
+                </h2>
+                <p class="card-subtitle">Enter your health data below — either type a plain-text description or fill in
+                    the form manually (or both!). Results appear automatically.</p>
+
+                <!-- NLP hint -->
+                <div class="nlp-hint">
+                    <strong><i class="fas fa-lightbulb" style="color:var(--warning);"></i> Smart Text Input:</strong>
+                    Type values in any order, any case. Keywords like <code>GlUcose</code>, <code>GLUCOSE</code>,
+                    <code>glucose</code> all work.<br>
+                    <strong>Example:</strong>
+                    <code>age 52, glucose 185, bmi 28.5, blood pressure 150, heart disease no, smoking smokes, gender male, married yes, work private, residence urban</code><br>
+                    <strong>Supported:</strong> age · glucose/blood sugar · bmi · blood pressure/bp · heart disease
+                    (yes/no) · hypertension (yes/no) · smoking (smokes/never/formerly) · gender · married (yes/no) ·
+                    work (private/govt/self-employed) · residence (urban/rural)
+                </div>
+
+                <input type="text" id="healthDescription" class="nlp-textarea"
+                    placeholder="e.g. age 52, glucose 185, bmi 28.5, blood pressure 150, heart disease no, smoking smokes..."
+                    style="min-height: 48px;">
+                <div class="extracted-preview" id="extractedPreview">
+                    <div
+                        style="font-size:0.77rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">
+                        <i class="fas fa-tags"></i> &nbsp;Extracted Values
+                    </div>
+                    <div class="ext-tags" id="extractedTags"></div>
+                </div>
+
+                <!-- Manual form accordion -->
+                <div style="margin-top:16px;">
+                    <div class="accordion-toggle" id="accordionToggle" onclick="toggleAccordion()">
+                        <i class="fas fa-sliders"></i> <span>Or fill manually (optional dropdowns &amp; sliders)</span>
+                        <i class="fas fa-chevron-down" id="accordionChevron"
+                            style="margin-left:auto;transition:transform 0.3s;"></i>
+                    </div>
+                    <div class="accordion-body" id="accordionBody">
+                        <div class="form-grid">
+                            <div class="form-group"><label>Age <span class="range-value"
+                                        id="ageVal">50</span></label><input type="range" id="age" min="0" max="100"
+                                    value="50" oninput="document.getElementById('ageVal').textContent=this.value"></div>
+                            <div class="form-group"><label>Gender</label><select id="gender">
+                                    <option value="Female">Female</option>
+                                    <option value="Male" selected>Male</option>
+                                    <option value="Other">Other</option>
+                                </select></div>
+                            <div class="form-group"><label>Ever Married</label><select id="ever_married">
+                                    <option value="Yes" selected>Yes</option>
+                                    <option value="No">No</option>
+                                </select></div>
+                            <div class="form-group"><label>Residence</label><select id="residence_type">
+                                    <option value="Urban" selected>Urban</option>
+                                    <option value="Rural">Rural</option>
+                                </select></div>
+                        </div>
+                        <div class="form-grid">
+                            <div class="form-group"><label>Blood Pressure <span class="range-value"
+                                        id="bpVal">120</span> mmHg</label><input type="range" id="blood_pressure"
+                                    min="60" max="220" value="120"
+                                    oninput="document.getElementById('bpVal').textContent=this.value"></div>
+                            <div class="form-group"><label>Heart Disease</label><select id="heart_disease">
+                                    <option value="0" selected>No</option>
+                                    <option value="1">Yes</option>
+                                </select></div>
+                            <div class="form-group"><label>Avg Glucose <span class="range-value"
+                                        id="glucoseVal">100</span> mg/dL</label><input type="range"
+                                    id="avg_glucose_level" min="50" max="350" value="100"
+                                    oninput="document.getElementById('glucoseVal').textContent=this.value"></div>
+                            <div class="form-group"><label>BMI <span class="range-value"
+                                        id="bmiVal">25.0</span></label><input type="range" id="bmi" min="10" max="60"
+                                    value="25" step="0.1"
+                                    oninput="document.getElementById('bmiVal').textContent=parseFloat(this.value).toFixed(1)">
+                            </div>
+                        </div>
+                        <div class="form-grid">
+                            <div class="form-group"><label>Work Type</label><select id="work_type">
+                                    <option value="Private" selected>Private</option>
+                                    <option value="Self-employed">Self-employed</option>
+                                    <option value="Govt_job">Govt Job</option>
+                                    <option value="children">Children</option>
+                                    <option value="Never_worked">Never Worked</option>
+                                </select></div>
+                            <div class="form-group"><label>Smoking Status</label><select id="smoking_status">
+                                    <option value="never smoked" selected>Never Smoked</option>
+                                    <option value="formerly smoked">Formerly Smoked</option>
+                                    <option value="smokes">Currently Smokes</option>
+                                    <option value="Unknown">Unknown</option>
+                                </select></div>
+                        </div>
+                        <p style="font-size:0.82rem;color:var(--text-muted);margin-top:4px;"><i
+                                class="fas fa-info-circle" style="color:var(--primary);"></i> Dropdown values override
+                            extracted text values when submitting.</p>
+                    </div>
+                </div>
+
+                <div class="btn-row">
+                    <button class="btn-primary" id="analyzeBtn" onclick="analyzeHealth()"><i
+                            class="fas fa-wand-magic-sparkles"></i> Analyze &amp; Get Recommendations</button>
+                    <button class="btn-secondary" onclick="clearAll()"><i class="fas fa-rotate-left"></i> Clear</button>
+                </div>
+
+                <!-- Results -->
+                <div class="results-section" id="resultsSection">
+                    <div class="risk-badge-large low" id="riskBadgeLarge"><i class="fas fa-shield-heart"></i> <span
+                            id="riskLabel">Low Risk</span></div>
+                    <div class="consult-banner low" id="consultBanner">
+                        <div class="consult-icon" id="consultIcon">✅</div>
+                        <div class="consult-text">
+                            <h4 id="consultTitle">No Urgent Consultation Needed</h4>
+                            <p id="consultMsg"></p>
+                        </div>
+                    </div>
+                    <div id="doctorSection" style="display:none;margin-bottom:16px;">
+                        <div
+                            style="font-size:0.84rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px;">
+                            <i class="fas fa-user-doctor" style="color:var(--primary);"></i> &nbsp;Recommended
+                            Specialists
+                        </div>
+                        <div class="doctor-cards" id="doctorCards"></div>
+                    </div>
+                    <div class="rec-section">
+                        <h3><i class="fas fa-stethoscope"></i> Medical Advice</h3>
+                        <ul class="rec-list" id="medicalAdvice"></ul>
+                    </div>
+                    <div class="rec-section">
+                        <h3><i class="fas fa-bowl-rice"></i> Indian Foods to Include</h3>
+                        <ul class="rec-list indian" id="foodsEat"></ul>
+                    </div>
+                    <div class="rec-section">
+                        <h3><i class="fas fa-ban"></i> Indian Foods to Avoid</h3>
+                        <ul class="rec-list avoid" id="foodsAvoid"></ul>
+                    </div>
+                    <div class="rec-section">
+                        <h3><i class="fas fa-heartbeat"></i> Lifestyle Changes</h3>
+                        <ul class="rec-list" id="lifestyle"></ul>
+                    </div>
+                    <div class="rec-section" id="foodSugSection" style="display:none;">
+                        <h3><i class="fas fa-leaf"></i> Additional Food Suggestions</h3>
+                        <ul class="rec-list indian" id="foodSug"></ul>
+                    </div>
+                    <div style="text-align:center;margin-top:22px;">
+                        <button class="btn-primary" id="dlPdfBtn" onclick="downloadDoctorPDF()"><i
+                                class="fas fa-file-pdf"></i> Download PDF Report</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB: History -->
+        <div class="tab-content" id="tabContentHistory">
+            <div class="card">
+                <h2 class="card-title">
+                    <div class="icon-box"><i class="fas fa-clock-rotate-left"></i></div> Doctor Advice History
+                </h2>
+                <p class="card-subtitle">Your past doctor recommendation sessions are saved here. View details or
+                    download PDF for each entry.</p>
+                {% if advice_history %}
+                <div class="history-list">
+                    {% for entry in advice_history %}
+                    {% set risk = entry.recommendations.risk_level|lower %}
+                    <div class="history-item {{ risk }}" onclick="showHistDetail({{ loop.index0 }})">
+                        <div class="hi-info">
+                            <div class="hi-date"><i class="fas fa-calendar-day"
+                                    style="color:var(--primary);font-size:0.83rem;"></i> {{ entry.timestamp[:10] }} at
+                                {{ entry.timestamp[11:16] }}</div>
+                            <div class="hi-meta">
+                                {% if entry.input_data.age %}<span><i class="fas fa-user"></i> Age: {{
+                                    entry.input_data.age }}</span>{% endif %}
+                                {% if entry.input_data.avg_glucose_level %}<span><i class="fas fa-droplet"></i> Glucose:
+                                    {{ entry.input_data.avg_glucose_level }}</span>{% endif %}
+                                {% if entry.input_data.bmi %}<span><i class="fas fa-weight-scale"></i> BMI: {{
+                                    entry.input_data.bmi }}</span>{% endif %}
+                                {% if entry.input_data.blood_pressure and entry.input_data.blood_pressure > 0 %}<span><i
+                                        class="fas fa-heart-pulse"></i> BP: {{ entry.input_data.blood_pressure
+                                    }}</span>{% endif %}
+                            </div>
+                        </div>
+                        <div class="hi-actions">
+                            <span class="hist-risk-badge {{ risk }}">{{ entry.recommendations.risk_level }}</span>
+                            {% if entry.recommendations.consult_doctor %}<span
+                                style="font-size:0.77rem;color:var(--warning);font-weight:600;"><i
+                                    class="fas fa-triangle-exclamation"></i> Consult</span>{% endif %}
+                            <button class="view-btn"
+                                onclick="event.stopPropagation();showHistDetail({{ loop.index0 }})"><i
+                                    class="fas fa-eye"></i> View</button>
+                            <button class="pdf-btn"
+                                onclick="event.stopPropagation();downloadHistPDF({{ loop.index0 }})"><i
+                                    class="fas fa-file-pdf"></i> PDF</button>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="empty-state"><i class="fas fa-user-doctor"></i>
+                    <h3>No Advice History Yet</h3>
+                    <p>Your sessions will appear here after your first analysis.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- History Detail Modal -->
+    <div class="modal-overlay" id="histModal">
+        <div class="modal-box">
+            <button class="modal-close" onclick="closeModal()"><i class="fas fa-times"></i></button>
+            <div class="modal-title"><i class="fas fa-user-doctor" style="color:var(--primary);"></i> <span
+                    id="modalTitle">Advice Details</span></div>
+            <div id="modalContent"></div>
+        </div>
+    </div>
+
+    <script>
+        /* ---- DATA ---- */
+        var adviceHistory = {{ advice_history | tojson | safe }};
+        var currentFormData = null;
+        var currentRecommendations = null;
+
+        /* ---- TABS ---- */
+        function switchTab(tab) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            document.getElementById('tab' + tab.charAt(0).toUpperCase() + tab.slice(1)).classList.add('active');
+            document.getElementById('tabContent' + tab.charAt(0).toUpperCase() + tab.slice(1)).classList.add('active');
+        }
+
+        /* ---- ACCORDION ---- */
+        var accordionOpen = false;
+        function toggleAccordion() {
+            accordionOpen = !accordionOpen;
+            document.getElementById('accordionBody').classList.toggle('open', accordionOpen);
+            document.getElementById('accordionToggle').classList.toggle('open', accordionOpen);
+            document.getElementById('accordionChevron').style.transform = accordionOpen ? 'rotate(180deg)' : 'rotate(0deg)';
+        }
+
+        /* ---- MAIN ANALYZE ---- */
+        async function analyzeHealth() {
+            const description = document.getElementById('healthDescription').value.trim();
+            const accordionIsOpen = accordionOpen;
+
+            const btn = document.getElementById('analyzeBtn');
+            const overlay = document.getElementById('loadingOverlay');
+            btn.disabled = true;
+            overlay.classList.add('show');
+
+            try {
+                let extracted = {};
+                // NLP parsing if description provided
+                if (description) {
+                    const parseResp = await fetch('/api/parse-health-description', {
+                        method: 'POST', headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ description })
+                    });
+                    const parseData = await parseResp.json();
+                    if (parseData.success) {
+                        extracted = parseData.extracted;
+                        showExtractedTags(extracted);
+                    }
+                }
+
+                // Build health data: dropdown values override NLP if accordion is open
+                const healthData = {
+                    age: accordionIsOpen ? parseInt(document.getElementById('age').value) : (extracted.age || 50),
+                    gender: accordionIsOpen ? document.getElementById('gender').value : (extracted.gender || 'Male'),
+                    blood_pressure: accordionIsOpen ? parseFloat(document.getElementById('blood_pressure').value) : (extracted.blood_pressure || 0),
+                    hypertension: accordionIsOpen ? (parseFloat(document.getElementById('blood_pressure').value) >= 140 ? 1 : 0) : (extracted.hypertension !== undefined ? extracted.hypertension : 0),
+                    heart_disease: accordionIsOpen ? parseInt(document.getElementById('heart_disease').value) : (extracted.heart_disease !== undefined ? extracted.heart_disease : 0),
+                    ever_married: accordionIsOpen ? document.getElementById('ever_married').value : (extracted.ever_married || 'Yes'),
+                    work_type: accordionIsOpen ? document.getElementById('work_type').value : (extracted.work_type || 'Private'),
+                    residence_type: accordionIsOpen ? document.getElementById('residence_type').value : (extracted.residence_type || 'Urban'),
+                    avg_glucose_level: accordionIsOpen ? parseFloat(document.getElementById('avg_glucose_level').value) : (extracted.avg_glucose_level || 100),
+                    bmi: accordionIsOpen ? parseFloat(document.getElementById('bmi').value) : (extracted.bmi || 25),
+                    smoking_status: accordionIsOpen ? document.getElementById('smoking_status').value : (extracted.smoking_status || 'never smoked')
+                };
+                currentFormData = healthData;
+
+                // Get recommendations
+                const recResp = await fetch('/api/get-doctor-recommendations', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(healthData)
+                });
+                const recData = await recResp.json();
+                if (!recData.success) throw new Error(recData.error);
+                currentRecommendations = recData.recommendations;
+                displayResults(recData.recommendations);
+            } catch (err) {
+                showToast('Error: ' + err.message, 'error');
+            } finally {
+                btn.disabled = false;
+                overlay.classList.remove('show');
+            }
+        }
+
+        function showExtractedTags(ex) {
+            const fields = [
+                { k: 'age', l: 'Age', f: v => v + ' yrs' }, { k: 'avg_glucose_level', l: 'Glucose', f: v => v + ' mg/dL' },
+                { k: 'bmi', l: 'BMI', f: v => v }, { k: 'blood_pressure', l: 'BP', f: v => v + ' mmHg' },
+                { k: 'heart_disease', l: 'Heart Disease', f: v => v === 1 ? 'Yes' : 'No' }, { k: 'hypertension', l: 'Hypertension', f: v => v === 1 ? 'Yes' : 'No' },
+                { k: 'smoking_status', l: 'Smoking', f: v => v }, { k: 'gender', l: 'Gender', f: v => v },
+                { k: 'ever_married', l: 'Married', f: v => v }, { k: 'work_type', l: 'Work', f: v => v }, { k: 'residence_type', l: 'Residence', f: v => v }
+            ];
+            const tags = document.getElementById('extractedTags');
+            tags.innerHTML = fields.map(f => ex[f.k] !== undefined
+                ? `<span class="ext-tag"><strong>${f.l}:</strong>&nbsp;${f.f(ex[f.k])}</span>`
+                : `<span class="ext-tag miss">${f.l}: default</span>`
+            ).join('');
+            document.getElementById('extractedPreview').classList.add('show');
+        }
+
+        function displayResults(rec) {
+            const rl = (rec.risk_level || 'LOW').toLowerCase();
+            const riskMap = { low: 'Low Stroke Risk', medium: 'Medium Stroke Risk', high: 'High Stroke Risk' };
+            const badge = document.getElementById('riskBadgeLarge');
+            badge.className = 'risk-badge-large ' + rl;
+            document.getElementById('riskLabel').textContent = riskMap[rl] || rec.risk_level;
+
+            const banner = document.getElementById('consultBanner');
+            banner.className = 'consult-banner ' + rl;
+            document.getElementById('consultIcon').textContent = rl === 'high' ? '🚨' : rl === 'medium' ? '⚠️' : '✅';
+            const titles = { low: 'No Urgent Consultation Needed', medium: 'Doctor Consultation Recommended', high: '⛑️ URGENT — See a Doctor Immediately' };
+            document.getElementById('consultTitle').textContent = titles[rl] || '';
+            document.getElementById('consultMsg').textContent = rec.consult_message || '';
+
+            const doctorSection = document.getElementById('doctorSection');
+            const doctorCards = document.getElementById('doctorCards');
+            if (rec.doctor_types && rec.doctor_types.length > 0) {
+                doctorSection.style.display = 'block';
+                doctorCards.innerHTML = rec.doctor_types.map(d => {
+                    const uu = (d.urgency || '').toUpperCase();
+                    const uc = uu.includes('URGENT') || uu.includes('IMMEDIATE') ? 'high' : uu.includes('WEEK') ? 'medium' : 'low';
+                    return `<div class="doctor-card ${rl}"><div class="dc-header"><div class="dc-icon"><i class="fas fa-user-doctor"></i></div><div class="dc-name">${d.type}</div></div><div class="dc-reason">${d.reason}</div><span class="urg-badge ${uc}"><i class="fas fa-clock"></i> ${d.urgency}</span></div>`;
+                }).join('');
+            } else { doctorSection.style.display = 'none'; }
+
+            const advEl = document.getElementById('medicalAdvice');
+            advEl.innerHTML = (rec.medical_advice || []).map(a => `<li>${a}</li>`).join('');
+            if (rl === 'high') advEl.classList.add('critical'); else advEl.classList.remove('critical');
+            document.getElementById('foodsEat').innerHTML = (rec.indian_foods_to_eat || []).map(f => `<li>${f}</li>`).join('');
+            document.getElementById('foodsAvoid').innerHTML = (rec.indian_foods_to_avoid || []).map(f => `<li>${f}</li>`).join('');
+            document.getElementById('lifestyle').innerHTML = (rec.lifestyle_changes || []).map(c => `<li>${c}</li>`).join('');
+            const sugg = rec.indian_food_suggestions;
+            const fs = document.getElementById('foodSugSection');
+            if (sugg && sugg.length > 0) { document.getElementById('foodSug').innerHTML = sugg.map(f => `<li>${f}</li>`).join(''); fs.style.display = 'block'; } else { fs.style.display = 'none'; }
+
+            const rs = document.getElementById('resultsSection');
+            rs.classList.add('show');
+            setTimeout(() => rs.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 100);
+        }
+
+        function clearAll() {
+            document.getElementById('healthDescription').value = '';
+            document.getElementById('extractedPreview').classList.remove('show');
+            document.getElementById('resultsSection').classList.remove('show');
+            currentFormData = null; currentRecommendations = null;
+        }
+
+        /* ---- PDF DOWNLOAD current results ---- */
+        async function downloadDoctorPDF() {
+            if (!currentFormData || !currentRecommendations) { showToast('Generate recommendations first.', 'warning'); return; }
+            const btn = document.getElementById('dlPdfBtn'); const orig = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating…'; btn.disabled = true;
+            try {
+                const res = await fetch('/download-doctor-report', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ input_data: currentFormData, recommendations: currentRecommendations }) });
+                if (!res.ok) throw new Error('Server error');
+                const blob = await res.blob(); const url = URL.createObjectURL(blob);
+                const a = document.createElement('a'); a.href = url; a.download = 'Doctor_Recommendations_Report.pdf';
+                document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+            } catch (e) { showToast('PDF download failed.', 'error'); }
+            finally { btn.innerHTML = orig; btn.disabled = false; }
+        }
+
+        /* ---- PDF DOWNLOAD from history ---- */
+        async function downloadHistPDF(idx) {
+            const entry = adviceHistory[idx];
+            if (!entry) return;
+            const btn = event.target.closest('.pdf-btn'); const orig = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>'; btn.disabled = true;
+            try {
+                const res = await fetch('/download-doctor-report', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ input_data: entry.input_data, recommendations: entry.recommendations }) });
+                if (!res.ok) throw new Error('Server error');
+                const blob = await res.blob(); const url = URL.createObjectURL(blob);
+                const a = document.createElement('a'); a.href = url; a.download = 'Doctor_Report_' + entry.timestamp.slice(0, 10) + '.pdf';
+                document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+            } catch (e) { showToast('PDF download failed.', 'error'); }
+            finally { btn.innerHTML = orig; btn.disabled = false; }
+        }
+
+        /* ---- HISTORY MODAL ---- */
+        function showHistDetail(idx) {
+            const entry = adviceHistory[idx]; if (!entry) return;
+            const rec = entry.recommendations; const inp = entry.input_data;
+            const rl = (rec.risk_level || 'LOW').toLowerCase();
+            document.getElementById('modalTitle').textContent = entry.timestamp.slice(0, 10) + ' at ' + entry.timestamp.slice(11, 16) + ' — ' + rec.risk_category;
+            const bTitles = { low: 'No Urgent Consultation Needed', medium: 'Doctor Consultation Recommended', high: '⛑️ URGENT — See a Doctor Immediately' };
+            let html = `<div class="consult-banner ${rl}" style="margin-bottom:16px;"><div class="consult-icon">${rl === 'high' ? '🚨' : rl === 'medium' ? '⚠️' : '✅'}</div><div class="consult-text"><h4>${bTitles[rl] || ''}</h4><p>${rec.consult_message || ''}</p></div></div>`;
+            html += `<div style="margin-bottom:14px;"><div style="font-size:0.8rem;font-weight:700;color:var(--text-muted);margin-bottom:8px;text-transform:uppercase;"><i class="fas fa-clipboard-list" style="color:var(--primary);"></i> Health Parameters</div><div class="info-grid">`;
+            if (inp.age) html += `<div class="info-item"><span>Age</span><span>${inp.age}</span></div>`;
+            if (inp.gender) html += `<div class="info-item"><span>Gender</span><span>${inp.gender}</span></div>`;
+            if (inp.avg_glucose_level) html += `<div class="info-item"><span>Glucose</span><span>${inp.avg_glucose_level} mg/dL</span></div>`;
+            if (inp.bmi) html += `<div class="info-item"><span>BMI</span><span>${inp.bmi}</span></div>`;
+            if (inp.blood_pressure > 0) html += `<div class="info-item"><span>Blood Pressure</span><span>${inp.blood_pressure} mmHg</span></div>`;
+            if (inp.smoking_status) html += `<div class="info-item"><span>Smoking</span><span>${inp.smoking_status}</span></div>`;
+            if (inp.heart_disease !== undefined) html += `<div class="info-item"><span>Heart Disease</span><span>${inp.heart_disease ? 'Yes' : 'No'}</span></div>`;
+            html += `</div></div>`;
+            if (rec.doctor_types && rec.doctor_types.length > 0) {
+                html += `<div style="font-size:0.8rem;font-weight:700;color:var(--text-muted);margin-bottom:10px;text-transform:uppercase;"><i class="fas fa-user-doctor" style="color:var(--primary);"></i> Recommended Doctors</div><div class="doctor-cards">`;
+                rec.doctor_types.forEach(d => { const uu = (d.urgency || '').toUpperCase(); const uc = uu.includes('URGENT') || uu.includes('IMMEDIATE') ? 'high' : uu.includes('WEEK') ? 'medium' : 'low'; html += `<div class="doctor-card ${rl}"><div class="dc-header"><div class="dc-icon"><i class="fas fa-user-doctor"></i></div><div class="dc-name">${d.type}</div></div><div class="dc-reason">${d.reason}</div><span class="urg-badge ${uc}"><i class="fas fa-clock"></i> ${d.urgency}</span></div>`; });
+                html += `</div>`;
+            }
+            if (rec.medical_advice && rec.medical_advice.length > 0) { html += `<div class="rec-section" style="margin-top:14px;"><h3><i class="fas fa-stethoscope"></i> Medical Advice</h3><ul class="rec-list${rl === 'high' ? ' critical' : ''}">${rec.medical_advice.map(a => `<li>${a}</li>`).join('')}</ul></div>`; }
+            html += `<div style="text-align:center;margin-top:16px;"><button class="btn-primary" onclick="downloadHistPDF(${idx})"><i class="fas fa-file-pdf"></i> Download PDF</button></div>`;
+            document.getElementById('modalContent').innerHTML = html;
+            document.getElementById('histModal').classList.add('show');
+        }
+        function closeModal() { document.getElementById('histModal').classList.remove('show'); }
+        document.getElementById('histModal').addEventListener('click', e => { if (e.target === document.getElementById('histModal')) closeModal(); });
+
+        /* ---- TOAST ---- */
+        function showToast(msg, type) {
+            const c = type === 'error' ? '#F43F5E' : type === 'warning' ? '#F59E0B' : '#06D6A0';
+            const t = document.createElement('div');
+            t.style.cssText = `position:fixed;bottom:26px;right:26px;background:var(--bg-card);border:1px solid ${c};color:var(--text-primary);padding:13px 18px;border-radius:11px;font-size:0.87rem;font-weight:600;z-index:9999;box-shadow:0 8px 24px rgba(0,0,0,0.3);`;
+            t.textContent = msg; document.body.appendChild(t); setTimeout(() => t.remove(), 3500);
+        }
+    </script>
+    <script src="/static/js/theme-toggle.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,960 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>History - Stroke Risk Prediction</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/static/css/theme-toggle.css">
+    <style>
+        :root {
+            --primary: #0EA5E9;
+            --primary-dark: #0369A1;
+            --primary-glow: rgba(14, 165, 233, 0.25);
+            --accent: #06D6A0;
+            --accent-alt: #8B5CF6;
+            --success: #10B981;
+            --danger: #F43F5E;
+            --warning: #F59E0B;
+            --bg-dark: #0B1120;
+            --bg-card: rgba(15, 23, 42, 0.85);
+            --bg-elevated: rgba(30, 41, 59, 0.6);
+            --bg-input: rgba(30, 41, 59, 0.8);
+            --border: rgba(56, 189, 248, 0.12);
+            --border-subtle: rgba(56, 189, 248, 0.06);
+            --text-primary: #F1F5F9;
+            --text-secondary: #94A3B8;
+            --text-muted: #64748B;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-dark);
+            min-height: 100vh;
+            color: var(--text-primary);
+        }
+
+        .bg-effects {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+            background:
+                radial-gradient(ellipse 80% 50% at 50% -20%, rgba(14, 165, 233, 0.12), transparent),
+                radial-gradient(ellipse 60% 40% at 90% 100%, rgba(6, 214, 160, 0.08), transparent),
+                radial-gradient(ellipse 40% 50% at 5% 50%, rgba(139, 92, 246, 0.06), transparent);
+        }
+
+        .grid-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+            background-image:
+                linear-gradient(rgba(14, 165, 233, 0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(14, 165, 233, 0.02) 1px, transparent 1px);
+            background-size: 60px 60px;
+        }
+
+        .container {
+            max-width: 1440px;
+            margin: 0 auto;
+            padding: 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Navigation */
+        .navbar {
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 12px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 28px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .nav-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 1.2rem;
+            font-weight: 800;
+            color: var(--text-primary);
+        }
+
+        .nav-brand-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            color: white;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+        }
+
+        .nav-link {
+            padding: 8px 16px;
+            background: transparent;
+            border: 1px solid transparent;
+            border-radius: 10px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.85rem;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 7px;
+        }
+
+        .nav-link:hover {
+            background: var(--bg-elevated);
+            color: var(--text-primary);
+            border-color: var(--border);
+        }
+
+        .nav-link.active {
+            background: linear-gradient(135deg, rgba(14, 165, 233, 0.15), rgba(6, 214, 160, 0.08));
+            color: var(--primary);
+            border-color: rgba(14, 165, 233, 0.25);
+        }
+
+        .nav-link.logout {
+            color: var(--danger);
+        }
+
+        .nav-link.logout:hover {
+            background: rgba(244, 63, 94, 0.1);
+            border-color: rgba(244, 63, 94, 0.2);
+        }
+
+        .nav-link.admin-link {
+            color: var(--accent-alt);
+        }
+
+        .nav-link.admin-link:hover {
+            background: rgba(139, 92, 246, 0.1);
+            border-color: rgba(139, 92, 246, 0.2);
+        }
+
+        .user-badge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 14px;
+            background: rgba(14, 165, 233, 0.08);
+            border: 1px solid rgba(14, 165, 233, 0.15);
+            border-radius: 10px;
+            color: var(--primary);
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+
+        .nav-link.delete-account {
+            color: #EF4444;
+            border-color: rgba(239, 68, 68, 0.2);
+        }
+
+        .nav-link.delete-account:hover {
+            background: rgba(239, 68, 68, 0.15);
+            border-color: rgba(239, 68, 68, 0.3);
+        }
+
+        /* Delete Account Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.6);
+            z-index: 9998;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(4px);
+        }
+        .modal-overlay.show { display: flex; }
+        .modal {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 32px;
+            max-width: 480px;
+            width: 90%;
+            box-shadow: 0 25px 80px rgba(0,0,0,0.5);
+        }
+        .modal-header { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+        .modal-icon {
+            width: 52px; height: 52px;
+            background: linear-gradient(135deg, rgba(239,68,68,0.2), rgba(239,68,68,0.1));
+            border: 2px solid rgba(239,68,68,0.3);
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            color: #EF4444; font-size: 1.5rem;
+        }
+        .modal-title { font-size: 1.3rem; font-weight: 700; color: var(--text-primary); }
+        .modal-body { color: var(--text-secondary); line-height: 1.6; margin-bottom: 24px; font-size: 0.95rem; }
+        .modal-warning {
+            background: rgba(239,68,68,0.1); border-left: 4px solid #EF4444;
+            padding: 12px 16px; border-radius: 8px; color: #FCA5A5;
+            font-weight: 600; margin-top: 16px; font-size: 0.9rem;
+        }
+        .modal-actions { display: flex; gap: 12px; justify-content: flex-end; }
+        .modal-btn {
+            padding: 10px 24px; border-radius: 10px; font-weight: 600;
+            font-size: 0.9rem; cursor: pointer; transition: all 0.3s ease;
+            border: 1px solid; display: inline-flex; align-items: center; gap: 8px;
+        }
+        .modal-btn.cancel { background: var(--bg-elevated); border-color: var(--border); color: var(--text-secondary); }
+        .modal-btn.cancel:hover { background: var(--bg-input); border-color: var(--border-focus); color: var(--text-primary); }
+        .modal-btn.confirm-del { background: linear-gradient(135deg,#EF4444,#DC2626); border-color: #EF4444; color: white; }
+        .modal-btn.confirm-del:hover { background: linear-gradient(135deg,#DC2626,#B91C1C); transform: translateY(-1px); }
+
+        @media (max-width: 900px) {
+            .navbar {
+                flex-direction: column;
+                gap: 12px;
+                padding: 14px;
+            }
+
+            .nav-links {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+        }
+
+        /* Card */
+        .card {
+            background: var(--bg-card);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 32px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        }
+
+        .card-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .card-title .icon-box {
+            width: 42px;
+            height: 42px;
+            background: linear-gradient(135deg, rgba(14, 165, 233, 0.15), rgba(6, 214, 160, 0.08));
+            border: 1px solid rgba(14, 165, 233, 0.2);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+            font-size: 1.1rem;
+        }
+
+        /* History Items */
+        .history-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .history-item {
+            background: var(--bg-elevated);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 18px 22px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .history-item:hover {
+            border-color: rgba(14, 165, 233, 0.3);
+            transform: translateX(4px);
+            box-shadow: 0 4px 16px rgba(14, 165, 233, 0.08);
+        }
+
+        .history-item.low-risk {
+            border-left: 4px solid var(--success);
+        }
+
+        .history-item.medium-risk {
+            border-left: 4px solid var(--warning);
+        }
+
+        .history-item.high-risk {
+            border-left: 4px solid var(--danger);
+        }
+
+        .history-info {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .history-date {
+            font-weight: 600;
+            color: var(--text-primary);
+            font-size: 0.95rem;
+        }
+
+        .history-details {
+            display: flex;
+            gap: 14px;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .history-details span {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .history-result {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .probability-badge {
+            font-size: 1.4rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .risk-badge {
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .risk-badge.low {
+            background: rgba(16, 185, 129, 0.15);
+            color: #34D399;
+            border: 1px solid rgba(16, 185, 129, 0.25);
+        }
+
+        .risk-badge.medium {
+            background: rgba(245, 158, 11, 0.15);
+            color: #FCD34D;
+            border: 1px solid rgba(245, 158, 11, 0.25);
+        }
+
+        .risk-badge.high {
+            background: rgba(244, 63, 94, 0.15);
+            color: #FB7185;
+            border: 1px solid rgba(244, 63, 94, 0.25);
+        }
+
+        .view-btn {
+            padding: 8px 16px;
+            background: rgba(14, 165, 233, 0.1);
+            border: 1px solid rgba(14, 165, 233, 0.2);
+            color: var(--primary);
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            font-size: 0.82rem;
+        }
+
+        .view-btn:hover {
+            background: rgba(14, 165, 233, 0.2);
+            transform: translateY(-1px);
+        }
+
+        .download-btn-sm {
+            padding: 8px 16px;
+            background: rgba(6, 214, 160, 0.1);
+            border: 1px solid rgba(6, 214, 160, 0.2);
+            color: var(--accent);
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            font-size: 0.82rem;
+            text-decoration: none;
+        }
+
+        .download-btn-sm:hover {
+            background: rgba(6, 214, 160, 0.2);
+            transform: translateY(-1px);
+        }
+
+        @media (max-width: 768px) {
+            .history-item {
+                flex-direction: column;
+                gap: 12px;
+                align-items: flex-start;
+            }
+
+            .history-result {
+                width: 100%;
+                justify-content: space-between;
+            }
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-muted);
+        }
+
+        .empty-state i {
+            font-size: 3.5rem;
+            margin-bottom: 18px;
+            opacity: 0.2;
+        }
+
+        .empty-state h3 {
+            font-size: 1.2rem;
+            margin-bottom: 8px;
+            color: var(--text-secondary);
+        }
+
+        .empty-state p {
+            font-size: 0.9rem;
+        }
+
+        .empty-state a {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 20px;
+            padding: 10px 22px;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: white;
+            text-decoration: none;
+            border-radius: 10px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .empty-state a:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px var(--primary-glow);
+        }
+
+        /* Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal-overlay.show {
+            display: flex;
+        }
+
+        .modal {
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 32px;
+            max-width: 800px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+            animation: modalIn 0.3s ease;
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.5);
+        }
+
+        @keyframes modalIn {
+            from {
+                opacity: 0;
+                transform: scale(0.95);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 14px;
+            right: 14px;
+            width: 36px;
+            height: 36px;
+            border: 1px solid var(--border);
+            background: var(--bg-elevated);
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            color: var(--text-muted);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-close:hover {
+            background: rgba(244, 63, 94, 0.1);
+            color: var(--danger);
+            border-color: rgba(244, 63, 94, 0.2);
+        }
+
+        .modal-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .modal-title i {
+            color: var(--primary);
+        }
+
+        .modal-section {
+            margin-bottom: 22px;
+        }
+
+        .modal-section h4 {
+            font-size: 0.92rem;
+            color: var(--text-secondary);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .modal-section h4 i {
+            color: var(--primary);
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+            gap: 8px;
+        }
+
+        .info-item {
+            background: var(--bg-elevated);
+            border: 1px solid var(--border-subtle);
+            padding: 10px 14px;
+            border-radius: 10px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .info-item span:first-child {
+            color: var(--text-muted);
+            font-size: 0.82rem;
+        }
+
+        .info-item span:last-child {
+            font-weight: 600;
+            color: var(--primary);
+            font-size: 0.82rem;
+        }
+
+        .result-summary {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        @media (max-width: 640px) {
+            .result-summary {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .result-box {
+            background: var(--bg-elevated);
+            border: 1px solid var(--border);
+            padding: 18px;
+            border-radius: 14px;
+            text-align: center;
+        }
+
+        .result-box.ensemble {
+            background: linear-gradient(135deg, rgba(14, 165, 233, 0.15), rgba(6, 214, 160, 0.1));
+            border-color: rgba(14, 165, 233, 0.3);
+        }
+
+        .result-box h5 {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+        }
+
+        .result-box .prob {
+            font-size: 1.8rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .result-box.ensemble .prob {
+            -webkit-text-fill-color: white;
+            color: white;
+        }
+
+        .food-list-modal {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .food-tag {
+            background: var(--bg-elevated);
+            border: 1px solid var(--border-subtle);
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .food-tag.avoid {
+            border-color: rgba(244, 63, 94, 0.15);
+            background: rgba(244, 63, 94, 0.05);
+        }
+
+        .advice-item {
+            background: rgba(14, 165, 233, 0.06);
+            border: 1px solid rgba(14, 165, 233, 0.1);
+            padding: 10px 14px;
+            border-radius: 10px;
+            margin-bottom: 6px;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="bg-effects"></div>
+    <div class="grid-overlay"></div>
+
+    <div class="container">
+        <!-- Navigation -->
+        <nav class="navbar">
+            <div class="nav-brand">
+                <div class="nav-brand-icon"><i class="fas fa-heartbeat"></i></div>
+                <span>StrokeGuard AI</span>
+            </div>
+            <div class="nav-links">
+                <a href="/dashboard" class="nav-link"><i class="fas fa-chart-line"></i> Dashboard</a>
+                <a href="/history" class="nav-link active"><i class="fas fa-clock-rotate-left"></i> History</a>
+                <a href="/medications" class="nav-link"><i class="fas fa-capsules"></i> Medications</a>
+                <a href="/doctor-recommendations" class="nav-link"><i class="fas fa-user-doctor"></i> Doctor Advice</a>
+                {% if role == 'admin' %}
+                <a href="/admin" class="nav-link admin-link"><i class="fas fa-shield-halved"></i> Admin</a>
+                {% endif %}
+                <div class="user-badge"><i class="fas fa-user-circle"></i> {{ user }}</div>
+                <button class="nav-link delete-account" onclick="showDeleteAccountModal()" style="border: 1px solid rgba(239,68,68,0.2);">
+                    <i class="fas fa-user-slash"></i> Delete Account
+                </button>
+                <a href="/logout" class="nav-link logout"><i class="fas fa-right-from-bracket"></i> Logout</a>
+            </div>
+        </nav>
+
+        <!-- Delete Account Modal -->
+        <div class="modal-overlay" id="deleteAccountModal">
+            <div class="modal">
+                <div class="modal-header">
+                    <div class="modal-icon"><i class="fas fa-exclamation-triangle"></i></div>
+                    <h2 class="modal-title">Delete Account Permanently?</h2>
+                </div>
+                <div class="modal-body">
+                    <p>Are you absolutely sure you want to delete your account?</p>
+                    <ul style="margin:12px 0;padding-left:24px;color:var(--text-secondary);">
+                        <li>All prediction history and results</li>
+                        <li>All medication reminders</li>
+                        <li>All personal data</li>
+                    </ul>
+                    <div class="modal-warning">⚠️ This action cannot be undone!</div>
+                </div>
+                <div class="modal-actions">
+                    <button class="modal-btn cancel" onclick="hideDeleteAccountModal()"><i class="fas fa-times"></i> Cancel</button>
+                    <button class="modal-btn confirm-del" id="confirmDeleteBtn" onclick="confirmDeleteAccount()"><i class="fas fa-trash"></i> Yes, Delete My Account</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- History Card -->
+        <div class="card">
+            <h2 class="card-title">
+                <div class="icon-box"><i class="fas fa-clock-rotate-left"></i></div>
+                Prediction History
+            </h2>
+
+            {% if results %}
+            <div class="history-list">
+                {% for result in results %}
+                <div class="history-item {{ result.results.ensemble.risk_level|lower }}-risk"
+                    onclick="showDetails({{ loop.index0 }})">
+                    <div class="history-info">
+                        <div class="history-date">
+                            {{ result.timestamp[:10] }} at {{ result.timestamp[11:16] }}
+                        </div>
+                        <div class="history-details">
+                            <span><i class="fas fa-user"></i> Age: {{ result.input_data.age }}</span>
+                            <span><i class="fas fa-droplet"></i> Glucose: {{ result.input_data.avg_glucose_level
+                                }}</span>
+                            <span><i class="fas fa-weight-scale"></i> BMI: {{ result.input_data.bmi }}</span>
+                        </div>
+                    </div>
+                    <div class="history-result">
+                        <div class="probability-badge">{{ result.results.ensemble.probability }}%</div>
+                        <span class="risk-badge {{ result.results.ensemble.risk_level|lower }}">
+                            {{ result.results.ensemble.risk_level }}
+                        </span>
+                        <button class="view-btn" onclick="event.stopPropagation(); showDetails({{ loop.index0 }})">
+                            <i class="fas fa-eye"></i> Details
+                        </button>
+                        <a class="download-btn-sm" href="/download-history-report/{{ loop.index0 }}" target="_blank"
+                            onclick="event.stopPropagation();">
+                            <i class="fas fa-file-pdf"></i> PDF
+                        </a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <i class="fas fa-clipboard-list"></i>
+                <h3>No Predictions Yet</h3>
+                <p>Start by making your first stroke risk prediction</p>
+                <a href="/dashboard"><i class="fas fa-wand-magic-sparkles"></i> Make Prediction</a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Detail Modal -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal">
+            <button class="modal-close" onclick="closeModal()">&times;</button>
+            <h3 class="modal-title"><i class="fas fa-clipboard-list"></i> Prediction Details</h3>
+            <div id="modalContent"></div>
+        </div>
+    </div>
+
+    <script>
+        /* jshint ignore:start */
+        var resultsData = {{ results| tojson | safe }};
+        /* jshint ignore:end */
+
+        function buildFoodTag(food, isAvoid) {
+            var cls = isAvoid ? 'food-tag avoid' : 'food-tag';
+            return '<span class="' + cls + '">' + food + '</span>';
+        }
+        function buildInfoItem(label, value) {
+            return '<div class="info-item"><span>' + label + '</span><span>' + value + '</span></div>';
+        }
+        function buildResultBox(title, prob, riskLevel, isEnsemble) {
+            var cls = isEnsemble ? 'result-box ensemble' : 'result-box';
+            var riskCls = riskLevel.toLowerCase();
+            return '<div class="' + cls + '">' +
+                '<h5>' + title + '</h5>' +
+                '<div class="prob">' + prob + '%</div>' +
+                '<span class="risk-badge ' + riskCls + '">' + riskLevel + '</span>' +
+                '</div>';
+        }
+
+        function showDetails(index) {
+            var result = resultsData[index];
+            var modal = document.getElementById('modalOverlay');
+            var content = document.getElementById('modalContent');
+            var html = '';
+
+            html += '<div class="modal-section">';
+            html += '<h4><i class="fas fa-chart-line"></i> Results Summary</h4>';
+            html += '<div class="result-summary">';
+            html += buildResultBox('Model A', result.results.model_A.probability, result.results.model_A.risk_level, false);
+            html += buildResultBox('Model B', result.results.model_B.probability, result.results.model_B.risk_level, false);
+            html += buildResultBox('Combined', result.results.ensemble.probability, result.results.ensemble.risk_level, true);
+            html += '</div></div>';
+
+            html += '<div class="modal-section">';
+            html += '<h4><i class="fas fa-user"></i> Patient Information</h4>';
+            html += '<div class="info-grid">';
+            html += buildInfoItem('Age', result.input_data.age + ' years');
+            html += buildInfoItem('Gender', result.input_data.gender);
+            html += buildInfoItem('Glucose', result.input_data.avg_glucose_level + ' mg/dL');
+            html += buildInfoItem('BMI', result.input_data.bmi);
+            html += buildInfoItem('Hypertension', result.input_data.hypertension == '1' ? 'Yes' : 'No');
+            html += buildInfoItem('Heart Disease', result.input_data.heart_disease == '1' ? 'Yes' : 'No');
+            html += buildInfoItem('Married', result.input_data.ever_married);
+            html += buildInfoItem('Work Type', result.input_data.work_type);
+            html += buildInfoItem('Smoking', result.input_data.smoking_status);
+            html += buildInfoItem('Residence', result.input_data.residence_type);
+            html += '</div></div>';
+
+            if (result.food_recommendations) {
+                html += '<div class="modal-section">';
+                html += '<h4><i class="fas fa-utensils"></i> Foods to Eat</h4>';
+                html += '<div class="food-list-modal">';
+                if (result.food_recommendations.foods_to_eat) {
+                    for (var i = 0; i < result.food_recommendations.foods_to_eat.length; i++) {
+                        html += buildFoodTag(result.food_recommendations.foods_to_eat[i], false);
+                    }
+                }
+                html += '</div></div>';
+
+                html += '<div class="modal-section">';
+                html += '<h4><i class="fas fa-ban"></i> Foods to Avoid</h4>';
+                html += '<div class="food-list-modal">';
+                if (result.food_recommendations.foods_to_avoid) {
+                    for (var j = 0; j < result.food_recommendations.foods_to_avoid.length; j++) {
+                        html += buildFoodTag(result.food_recommendations.foods_to_avoid[j], true);
+                    }
+                }
+                html += '</div></div>';
+
+                if (result.food_recommendations.general_advice && result.food_recommendations.general_advice.length > 0) {
+                    html += '<div class="modal-section">';
+                    html += '<h4><i class="fas fa-lightbulb"></i> Advice</h4>';
+                    for (var k = 0; k < result.food_recommendations.general_advice.length; k++) {
+                        html += '<div class="advice-item">' + result.food_recommendations.general_advice[k] + '</div>';
+                    }
+                    html += '</div>';
+                }
+            }
+
+            html += '<div class="modal-section">';
+            html += '<h4><i class="fas fa-clock"></i> Recorded</h4>';
+            html += buildInfoItem('Date & Time', new Date(result.timestamp).toLocaleString());
+            html += '</div>';
+
+            content.innerHTML = html;
+            modal.classList.add('show');
+        }
+
+        function closeModal() {
+            document.getElementById('modalOverlay').classList.remove('show');
+        }
+        document.getElementById('modalOverlay').addEventListener('click', function (e) {
+            if (e.target === this) closeModal();
+        });
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') closeModal();
+        });
+
+        function showDeleteAccountModal() {
+            document.getElementById('deleteAccountModal').classList.add('show');
+        }
+        function hideDeleteAccountModal() {
+            document.getElementById('deleteAccountModal').classList.remove('show');
+        }
+        // Wait for Firebase auth state — currentUser can be null immediately after SDK init
+        function getFirebaseUser() {
+            return new Promise((resolve) => {
+                const unsub = firebase.auth().onAuthStateChanged(user => { unsub(); resolve(user); });
+            });
+        }
+
+        async function confirmDeleteAccount() {
+            const btn = document.getElementById('confirmDeleteBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Deleting...';
+            try {
+                // Step 1: Delete Firebase account FIRST
+                const firebaseUser = await getFirebaseUser();
+                if (firebaseUser) {
+                    try {
+                        await firebaseUser.delete();
+                    } catch (firebaseError) {
+                        if (firebaseError.code === 'auth/requires-recent-login') {
+                            alert('For security reasons, please log out and log back in before deleting your account.');
+                            window.location.href = '/logout';
+                            return;
+                        }
+                        console.warn('Firebase delete warning:', firebaseError.message);
+                    }
+                }
+                // Step 2: Delete from backend
+                const response = await fetch('/api/delete-account', { method: 'DELETE', headers: { 'Content-Type': 'application/json' } });
+                const data = await response.json();
+                if (data.success) {
+                    alert('Account deleted successfully.');
+                    window.location.href = '/login';
+                } else {
+                    alert('Error: ' + data.error);
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fas fa-trash"></i> Yes, Delete My Account';
+                }
+            } catch (err) {
+                alert('An error occurred. Please try again.');
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-trash"></i> Yes, Delete My Account';
+            }
+        }
+    </script>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script>
+        if (!firebase.apps.length) {
+            firebase.initializeApp({
+                apiKey: "{{ firebase_config.api_key }}",
+                authDomain: "{{ firebase_config.auth_domain }}",
+                projectId: "{{ firebase_config.project_id }}",
+                storageBucket: "{{ firebase_config.storage_bucket }}",
+                messagingSenderId: "{{ firebase_config.messaging_sender_id }}",
+                appId: "{{ firebase_config.app_id }}"
+            });
+        }
+    </script>
+    <script src="/static/js/theme-toggle.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,1509 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medications - Stroke Risk Prediction</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/static/css/theme-toggle.css">
+    <style>
+        :root {
+            --primary: #0EA5E9;
+            --primary-dark: #0369A1;
+            --primary-glow: rgba(14, 165, 233, 0.25);
+            --accent: #06D6A0;
+            --accent-alt: #8B5CF6;
+            --success: #10B981;
+            --danger: #F43F5E;
+            --warning: #F59E0B;
+            --bg-dark: #0B1120;
+            --bg-card: rgba(15, 23, 42, 0.85);
+            --bg-elevated: rgba(30, 41, 59, 0.6);
+            --bg-input: rgba(30, 41, 59, 0.8);
+            --border: rgba(56, 189, 248, 0.12);
+            --border-subtle: rgba(56, 189, 248, 0.06);
+            --border-focus: rgba(14, 165, 233, 0.5);
+            --text-primary: #F1F5F9;
+            --text-secondary: #94A3B8;
+            --text-muted: #64748B;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-dark);
+            min-height: 100vh;
+            color: var(--text-primary);
+        }
+
+        .bg-effects {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+            background:
+                radial-gradient(ellipse 80% 50% at 50% -20%, rgba(14, 165, 233, 0.12), transparent),
+                radial-gradient(ellipse 60% 40% at 90% 100%, rgba(6, 214, 160, 0.08), transparent),
+                radial-gradient(ellipse 40% 50% at 5% 50%, rgba(139, 92, 246, 0.06), transparent);
+        }
+
+        .grid-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+            background-image:
+                linear-gradient(rgba(14, 165, 233, 0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(14, 165, 233, 0.02) 1px, transparent 1px);
+            background-size: 60px 60px;
+        }
+
+        .container {
+            max-width: 1440px;
+            margin: 0 auto;
+            padding: 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Navigation - same as other pages */
+        .navbar {
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 12px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 28px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .nav-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 1.2rem;
+            font-weight: 800;
+            color: var(--text-primary);
+        }
+
+        .nav-brand-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            color: white;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+        }
+
+        .nav-link {
+            padding: 8px 16px;
+            background: transparent;
+            border: 1px solid transparent;
+            border-radius: 10px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.85rem;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 7px;
+        }
+
+        .nav-link:hover {
+            background: var(--bg-elevated);
+            color: var(--text-primary);
+            border-color: var(--border);
+        }
+
+        .nav-link.active {
+            background: linear-gradient(135deg, rgba(14, 165, 233, 0.15), rgba(6, 214, 160, 0.08));
+            color: var(--primary);
+            border-color: rgba(14, 165, 233, 0.25);
+        }
+
+        .nav-link.logout {
+            color: var(--danger);
+        }
+
+        .nav-link.logout:hover {
+            background: rgba(244, 63, 94, 0.1);
+            border-color: rgba(244, 63, 94, 0.2);
+        }
+
+        .nav-link.admin-link {
+            color: var(--accent-alt);
+        }
+
+        .nav-link.admin-link:hover {
+            background: rgba(139, 92, 246, 0.1);
+            border-color: rgba(139, 92, 246, 0.2);
+        }
+
+        .user-badge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 14px;
+            background: rgba(14, 165, 233, 0.08);
+            border: 1px solid rgba(14, 165, 233, 0.15);
+            border-radius: 10px;
+            color: var(--primary);
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+
+        .nav-link.delete-account {
+            color: #EF4444;
+            border-color: rgba(239, 68, 68, 0.2);
+        }
+
+        .nav-link.delete-account:hover {
+            background: rgba(239, 68, 68, 0.15);
+            border-color: rgba(239, 68, 68, 0.3);
+        }
+
+        /* Delete Account Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.6);
+            z-index: 9998;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(4px);
+        }
+        .modal-overlay.show { display: flex; }
+        .modal {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 32px;
+            max-width: 480px;
+            width: 90%;
+            box-shadow: 0 25px 80px rgba(0,0,0,0.5);
+        }
+        .modal-header { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+        .modal-icon {
+            width: 52px; height: 52px;
+            background: linear-gradient(135deg, rgba(239,68,68,0.2), rgba(239,68,68,0.1));
+            border: 2px solid rgba(239,68,68,0.3);
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            color: #EF4444; font-size: 1.5rem;
+        }
+        .modal-title { font-size: 1.3rem; font-weight: 700; color: var(--text-primary); }
+        .modal-body { color: var(--text-secondary); line-height: 1.6; margin-bottom: 24px; font-size: 0.95rem; }
+        .modal-warning {
+            background: rgba(239,68,68,0.1); border-left: 4px solid #EF4444;
+            padding: 12px 16px; border-radius: 8px; color: #FCA5A5;
+            font-weight: 600; margin-top: 16px; font-size: 0.9rem;
+        }
+        .modal-actions { display: flex; gap: 12px; justify-content: flex-end; }
+        .modal-btn {
+            padding: 10px 24px; border-radius: 10px; font-weight: 600;
+            font-size: 0.9rem; cursor: pointer; transition: all 0.3s ease;
+            border: 1px solid; display: inline-flex; align-items: center; gap: 8px;
+        }
+        .modal-btn.cancel { background: var(--bg-elevated); border-color: var(--border); color: var(--text-secondary); }
+        .modal-btn.cancel:hover { background: var(--bg-input); border-color: var(--border-focus); color: var(--text-primary); }
+        .modal-btn.confirm-del { background: linear-gradient(135deg,#EF4444,#DC2626); border-color: #EF4444; color: white; }
+        .modal-btn.confirm-del:hover { background: linear-gradient(135deg,#DC2626,#B91C1C); transform: translateY(-1px); }
+
+        @media (max-width: 900px) {
+            .navbar {
+                flex-direction: column;
+                gap: 12px;
+                padding: 14px;
+            }
+
+            .nav-links {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+        }
+
+        /* Main Grid */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 380px 1fr;
+            gap: 24px;
+        }
+
+        @media (max-width: 1024px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Card */
+        .card {
+            background: var(--bg-card);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 32px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        }
+
+        .card-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .card-title .icon-box {
+            width: 42px;
+            height: 42px;
+            background: linear-gradient(135deg, rgba(14, 165, 233, 0.15), rgba(6, 214, 160, 0.08));
+            border: 1px solid rgba(14, 165, 233, 0.2);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+            font-size: 1.1rem;
+        }
+
+        /* Form Styles */
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 7px;
+            font-size: 0.82rem;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 12px 14px;
+            background: var(--bg-input);
+            border: 1.5px solid var(--border);
+            border-radius: 10px;
+            font-size: 0.92rem;
+            font-family: inherit;
+            color: var(--text-primary);
+            transition: all 0.3s ease;
+        }
+
+        .form-group select {
+            cursor: pointer;
+            -webkit-appearance: none;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2394A3B8' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            padding-right: 32px;
+        }
+
+        .form-group select option {
+            background: #1E293B;
+            color: var(--text-primary);
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: var(--border-focus);
+            box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.08);
+        }
+
+        /* Frequency Options */
+        .frequency-options {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 18px;
+        }
+
+        .freq-option {
+            flex: 1;
+            padding: 14px;
+            background: var(--bg-elevated);
+            border: 1.5px solid var(--border);
+            border-radius: 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .freq-option:hover {
+            border-color: rgba(14, 165, 233, 0.3);
+        }
+
+        .freq-option.active {
+            background: rgba(14, 165, 233, 0.1);
+            border-color: rgba(14, 165, 233, 0.4);
+        }
+
+        .freq-option .number {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: var(--primary);
+        }
+
+        .freq-option .label {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        /* Time Selection */
+        .time-selection {
+            display: none;
+            margin-bottom: 18px;
+        }
+
+        .time-selection.show {
+            display: block;
+        }
+
+        .time-selection label {
+            font-size: 0.82rem;
+            color: var(--text-muted);
+        }
+
+        .time-options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .time-option {
+            padding: 10px 16px;
+            background: var(--bg-elevated);
+            border: 1.5px solid var(--border);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+        }
+
+        .time-option:hover {
+            border-color: rgba(14, 165, 233, 0.3);
+        }
+
+        .time-option.selected {
+            background: linear-gradient(135deg, rgba(14, 165, 233, 0.15), rgba(6, 214, 160, 0.08));
+            border-color: rgba(14, 165, 233, 0.4);
+            color: var(--primary);
+        }
+
+        .custom-time {
+            display: none;
+            margin-top: 12px;
+        }
+
+        .custom-time.show {
+            display: block;
+        }
+
+        .custom-time label {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+        }
+
+        .custom-time-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 10px;
+        }
+
+        @media (max-width: 480px) {
+            .custom-time-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .custom-time-item {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .custom-time-item label {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .custom-time-item input {
+            padding: 10px;
+        }
+
+        /* Submit Button */
+        .submit-btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, var(--accent), #059669);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 0.95rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(6, 214, 160, 0.3);
+        }
+
+        /* Medication List */
+        .med-list {
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+
+        .med-card {
+            background: var(--bg-elevated);
+            border: 1.5px solid var(--border);
+            border-radius: 16px;
+            padding: 22px;
+            position: relative;
+        }
+
+        .med-card.overdue {
+            border-color: rgba(244, 63, 94, 0.4);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                box-shadow: 0 0 0 0 rgba(244, 63, 94, 0.3);
+            }
+
+            50% {
+                box-shadow: 0 0 0 12px rgba(244, 63, 94, 0);
+            }
+        }
+
+        .med-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 16px;
+        }
+
+        .med-name {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .med-name i {
+            color: var(--primary);
+        }
+
+        .delete-btn {
+            padding: 6px 12px;
+            background: rgba(244, 63, 94, 0.1);
+            border: 1px solid rgba(244, 63, 94, 0.2);
+            border-radius: 8px;
+            color: var(--danger);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.8rem;
+        }
+
+        .delete-btn:hover {
+            background: var(--danger);
+            color: white;
+        }
+
+        .med-schedule {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 12px;
+        }
+
+        .schedule-item {
+            background: rgba(15, 23, 42, 0.5);
+            border: 1px solid var(--border-subtle);
+            border-radius: 12px;
+            padding: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .schedule-item.taken {
+            border-color: rgba(16, 185, 129, 0.3);
+            background: rgba(16, 185, 129, 0.05);
+        }
+
+        .schedule-item.overdue {
+            border-color: rgba(244, 63, 94, 0.3);
+            background: rgba(244, 63, 94, 0.05);
+        }
+
+        .schedule-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .schedule-slot {
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: capitalize;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.85rem;
+        }
+
+        .schedule-slot i {
+            color: var(--warning);
+        }
+
+        .schedule-time {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .countdown {
+            font-size: 0.82rem;
+            color: var(--text-muted);
+            margin-bottom: 10px;
+            padding: 6px 10px;
+            background: var(--bg-elevated);
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid var(--border-subtle);
+        }
+
+        .countdown.urgent {
+            background: rgba(245, 158, 11, 0.08);
+            color: var(--warning);
+            font-weight: 600;
+            border-color: rgba(245, 158, 11, 0.2);
+        }
+
+        .countdown.overdue {
+            background: rgba(244, 63, 94, 0.08);
+            color: var(--danger);
+            font-weight: 600;
+            border-color: rgba(244, 63, 94, 0.2);
+        }
+
+        .countdown.taken {
+            background: rgba(16, 185, 129, 0.08);
+            color: var(--success);
+            border-color: rgba(16, 185, 129, 0.2);
+        }
+
+        .take-btn {
+            width: 100%;
+            padding: 10px;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 0.82rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            transition: all 0.3s ease;
+        }
+
+        .take-btn:hover:not(:disabled) {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px var(--primary-glow);
+        }
+
+        .take-btn:disabled {
+            background: var(--success);
+            cursor: default;
+            opacity: 0.8;
+        }
+
+        .take-btn.overdue {
+            background: var(--danger);
+            animation: shake 0.5s infinite;
+        }
+
+        @keyframes shake {
+
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+
+            25% {
+                transform: translateX(-2px);
+            }
+
+            75% {
+                transform: translateX(2px);
+            }
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 50px 20px;
+            color: var(--text-muted);
+        }
+
+        .empty-state i {
+            font-size: 3.5rem;
+            margin-bottom: 16px;
+            opacity: 0.2;
+        }
+
+        .empty-state h3 {
+            font-size: 1.2rem;
+            margin-bottom: 8px;
+            color: var(--text-secondary);
+        }
+
+        /* Medication Alerts */
+        .medication-alert {
+            padding: 16px 20px;
+            border-radius: 12px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-left: 4px solid;
+            animation: slideInAlert 0.3s ease-out;
+        }
+
+        @keyframes slideInAlert {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .medication-alert.warning {
+            background: linear-gradient(135deg, rgba(251, 191, 36, 0.15), rgba(245, 158, 11, 0.1));
+            border-left-color: #f59e0b;
+            border: 1px solid rgba(251, 191, 36, 0.3);
+        }
+
+        .medication-alert.urgent {
+            background: linear-gradient(135deg, rgba(251, 146, 60, 0.15), rgba(249, 115, 22, 0.1));
+            border-left-color: #f97316;
+            border: 1px solid rgba(251, 146, 60, 0.3);
+        }
+
+        .medication-alert.critical {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(220, 38, 38, 0.1));
+            border-left-color: #dc2626;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            animation: pulseAlert 2s infinite;
+        }
+
+        @keyframes pulseAlert {
+            0%, 100% {
+                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4);
+            }
+            50% {
+                box-shadow: 0 0 20px 10px rgba(239, 68, 68, 0.1);
+            }
+        }
+
+        .medication-alert .alert-icon {
+            font-size: 1.5rem;
+            flex-shrink: 0;
+        }
+
+        .medication-alert.warning .alert-icon {
+            color: #f59e0b;
+        }
+
+        .medication-alert.urgent .alert-icon {
+            color: #f97316;
+        }
+
+        .medication-alert.critical .alert-icon {
+            color: #dc2626;
+        }
+
+        .medication-alert .alert-content {
+            flex: 1;
+        }
+
+        .medication-alert .alert-title {
+            font-weight: 700;
+            font-size: 0.95rem;
+            margin-bottom: 4px;
+        }
+
+        .medication-alert.warning .alert-title {
+            color: #f59e0b;
+        }
+
+        .medication-alert.urgent .alert-title {
+            color: #f97316;
+        }
+
+        .medication-alert.critical .alert-title {
+            color: #dc2626;
+        }
+
+        .medication-alert .alert-message {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        /* Current Time */
+        .current-time {
+            background: linear-gradient(135deg, rgba(14, 165, 233, 0.15), rgba(6, 214, 160, 0.1));
+            border: 1px solid rgba(14, 165, 233, 0.25);
+            border-radius: 14px;
+            padding: 18px;
+            text-align: center;
+            margin-bottom: 22px;
+        }
+
+        .current-time .label {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .current-time .time {
+            font-size: 2.2rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .current-time .date {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-top: 4px;
+        }
+
+        /* Alert Banner */
+        .alert-banner {
+            display: none;
+            background: rgba(244, 63, 94, 0.08);
+            border: 1px solid rgba(244, 63, 94, 0.25);
+            color: #FB7185;
+            padding: 14px 22px;
+            border-radius: 14px;
+            margin-bottom: 22px;
+            align-items: center;
+            gap: 14px;
+            animation: slideDown 0.5s ease;
+        }
+
+        .alert-banner.show {
+            display: flex;
+        }
+
+        .alert-banner i {
+            font-size: 1.8rem;
+        }
+
+        .alert-banner .text {
+            flex: 1;
+        }
+
+        .alert-banner .text strong {
+            display: block;
+            font-size: 1rem;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-16px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Reset Button */
+        .reset-btn {
+            padding: 8px 16px;
+            background: var(--bg-elevated);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            color: var(--text-secondary);
+            font-weight: 600;
+            font-size: 0.82rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .reset-btn:hover {
+            background: rgba(14, 165, 233, 0.1);
+            color: var(--primary);
+            border-color: rgba(14, 165, 233, 0.2);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 22px;
+        }
+
+        .card-header .card-title {
+            margin-bottom: 0;
+        }
+
+        /* Light Mode Overrides */
+        body[data-theme="light"] .med-card {
+            background: rgba(248, 250, 252, 0.9);
+            border-color: var(--border);
+        }
+
+        body[data-theme="light"] .schedule-item {
+            background: rgba(241, 245, 249, 0.5);
+        }
+
+        body[data-theme="light"] .schedule-item.taken {
+            background: rgba(16, 185, 129, 0.05);
+        }
+
+        body[data-theme="light"] .countdown {
+            background: rgba(248, 250, 252, 0.9);
+        }
+
+        body[data-theme="light"] .delete-btn {
+            background: rgba(244, 63, 94, 0.1);
+            border-color: rgba(244, 63, 94, 0.3);
+        }
+
+        body[data-theme="light"] .delete-btn:hover {
+            background: rgba(244, 63, 94, 0.15);
+        }
+
+        body[data-theme="light"] .take-btn {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: white;
+        }
+
+        body[data-theme="light"] .take-btn:hover:not(:disabled) {
+            box-shadow: 0 4px 12px rgba(14, 165, 233, 0.3);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="bg-effects"></div>
+    <div class="grid-overlay"></div>
+
+    <div class="container">
+        <nav class="navbar">
+            <div class="nav-brand">
+                <div class="nav-brand-icon"><i class="fas fa-heartbeat"></i></div>
+                <span>StrokeGuard AI</span>
+            </div>
+            <div class="nav-links">
+                <a href="/dashboard" class="nav-link"><i class="fas fa-chart-line"></i> Dashboard</a>
+                <a href="/history" class="nav-link"><i class="fas fa-clock-rotate-left"></i> History</a>
+                <a href="/medications" class="nav-link active"><i class="fas fa-capsules"></i> Medications</a>
+                <a href="/doctor-recommendations" class="nav-link"><i class="fas fa-user-doctor"></i> Doctor Advice</a>
+                {% if role == 'admin' %}
+                <a href="/admin" class="nav-link admin-link"><i class="fas fa-shield-halved"></i> Admin</a>
+                {% endif %}
+                <div class="user-badge"><i class="fas fa-user-circle"></i> {{ user }}</div>
+                <button class="nav-link delete-account" onclick="showDeleteAccountModal()" style="border: 1px solid rgba(239,68,68,0.2);">
+                    <i class="fas fa-user-slash"></i> Delete Account
+                </button>
+                <a href="/logout" class="nav-link logout"><i class="fas fa-right-from-bracket"></i> Logout</a>
+            </div>
+        </nav>
+
+        <!-- Delete Account Modal -->
+        <div class="modal-overlay" id="deleteAccountModal">
+            <div class="modal">
+                <div class="modal-header">
+                    <div class="modal-icon"><i class="fas fa-exclamation-triangle"></i></div>
+                    <h2 class="modal-title">Delete Account Permanently?</h2>
+                </div>
+                <div class="modal-body">
+                    <p>Are you absolutely sure you want to delete your account?</p>
+                    <ul style="margin:12px 0;padding-left:24px;color:var(--text-secondary);">
+                        <li>All prediction history and results</li>
+                        <li>All medication reminders</li>
+                        <li>All personal data</li>
+                    </ul>
+                    <div class="modal-warning">⚠️ This action cannot be undone!</div>
+                </div>
+                <div class="modal-actions">
+                    <button class="modal-btn cancel" onclick="hideDeleteAccountModal()"><i class="fas fa-times"></i> Cancel</button>
+                    <button class="modal-btn confirm-del" id="confirmDeleteBtn" onclick="confirmDeleteAccount()"><i class="fas fa-trash"></i> Yes, Delete My Account</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert-banner" id="alertBanner">
+            <i class="fas fa-triangle-exclamation"></i>
+            <div class="text">
+                <strong>Medication Alert!</strong>
+                <span id="alertText">You have overdue medications that haven't been taken.</span>
+            </div>
+        </div>
+
+        <div class="main-grid">
+            <!-- Add Medication Form -->
+            <div class="card">
+                <h2 class="card-title">
+                    <div class="icon-box"><i class="fas fa-plus-circle"></i></div>
+                    Add Medication
+                </h2>
+
+                <form id="medicationForm">
+                    <div class="form-group">
+                        <label>Tablet / Medicine Name</label>
+                        <input type="text" id="tabletName" placeholder="Enter tablet name" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>How many times per day?</label>
+                        <div class="frequency-options">
+                            <div class="freq-option" data-freq="1">
+                                <div class="number">1</div>
+                                <div class="label">Once</div>
+                            </div>
+                            <div class="freq-option" data-freq="2">
+                                <div class="number">2</div>
+                                <div class="label">Twice</div>
+                            </div>
+                            <div class="freq-option" data-freq="3">
+                                <div class="number">3</div>
+                                <div class="label">Thrice</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="time-selection" id="timeSelection1">
+                        <label>Select when to take:</label>
+                        <div class="time-options">
+                            <div class="time-option" data-time="morning"><i class="fas fa-sun"></i> Morning (9:00 AM)
+                            </div>
+                            <div class="time-option" data-time="afternoon"><i class="fas fa-cloud-sun"></i> Afternoon
+                                (1:00 PM)</div>
+                            <div class="time-option" data-time="night"><i class="fas fa-moon"></i> Night (8:30 PM)</div>
+                        </div>
+                    </div>
+
+                    <div class="time-selection" id="timeSelection2">
+                        <label>Default times: Morning (9:00 AM) & Night (8:30 PM)</label>
+                    </div>
+
+                    <div class="time-selection" id="timeSelection3">
+                        <label>Default times: Morning (9:00 AM), Afternoon (1:00 PM) & Night (8:30 PM)</label>
+                    </div>
+
+                    <div class="custom-time" id="customTime">
+                        <label
+                            style="margin-bottom: 10px; display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                            <input type="checkbox" id="useCustomTime"> Set custom times
+                        </label>
+                        <div class="custom-time-grid" id="customTimeGrid" style="display: none;">
+                            <div class="custom-time-item" id="customMorning" style="display: none;">
+                                <label>Morning</label>
+                                <input type="time" id="morningTime" value="09:00">
+                            </div>
+                            <div class="custom-time-item" id="customAfternoon" style="display: none;">
+                                <label>Afternoon</label>
+                                <input type="time" id="afternoonTime" value="13:00">
+                            </div>
+                            <div class="custom-time-item" id="customNight" style="display: none;">
+                                <label>Night</label>
+                                <input type="time" id="nightTime" value="20:30">
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="submit-btn">
+                        <i class="fas fa-plus"></i> Add Medication
+                    </button>
+                </form>
+            </div>
+
+            <!-- Medication List -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <div class="icon-box"><i class="fas fa-capsules"></i></div>
+                        Your Medications
+                    </h2>
+                    <button class="reset-btn" onclick="resetDaily()">
+                        <i class="fas fa-rotate-right"></i> Reset for New Day
+                    </button>
+                </div>
+
+                <div class="current-time">
+                    <div class="label">Current Time</div>
+                    <div class="time" id="currentTime">--:--:--</div>
+                    <div class="date" id="currentDate">Loading...</div>
+                </div>
+
+                <!-- Alert Container for Overdue Medications -->
+                <div id="alertContainer" style="margin: 0 30px;"></div>
+
+                <div class="med-list" id="medList">
+                    <div class="empty-state" id="emptyState">
+                        <i class="fas fa-capsules"></i>
+                        <h3>No Medications Added</h3>
+                        <p>Add your daily medications to get reminders</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Version 2.0 - Fixed delete medication function
+        let selectedFrequency = 0;
+        let selectedTimes = [];
+        let medications = [];
+
+        async function loadMedications() {
+            try {
+                const response = await fetch('/api/medications');
+                const data = await response.json();
+                if (data.success) { 
+                    medications = data.medications; 
+                    renderMedications(); 
+                    loadAlerts(); // Load alerts after medications
+                }
+            } catch (error) { console.error('Error loading medications:', error); }
+        }
+        loadMedications();
+
+        // Load medication alerts
+        async function loadAlerts() {
+            try {
+                const response = await fetch('/api/medications/alerts');
+                const data = await response.json();
+                if (data.success) {
+                    displayAlerts(data.alerts);
+                }
+            } catch (error) {
+                console.error('Error loading alerts:', error);
+            }
+        }
+
+        // Display alerts in the UI
+        function displayAlerts(alerts) {
+            const alertContainer = document.getElementById('alertContainer');
+            
+            if (!alerts || alerts.length === 0) {
+                alertContainer.innerHTML = '';
+                return;
+            }
+
+            let alertHtml = '';
+            alerts.forEach(alert => {
+                const icon = alert.severity === 'critical' ? 'fa-triangle-exclamation' : 
+                            alert.severity === 'urgent' ? 'fa-bell' : 'fa-clock';
+                
+                const hours = Math.floor(alert.minutes_overdue / 60);
+                const mins = alert.minutes_overdue % 60;
+                const timeText = hours > 0 ? `${hours}h ${mins}m` : `${mins} min`;
+                
+                alertHtml += `
+                    <div class="medication-alert ${alert.severity}">
+                        <div class="alert-icon">
+                            <i class="fas ${icon}"></i>
+                        </div>
+                        <div class="alert-content">
+                            <div class="alert-title">
+                                ${alert.severity === 'critical' ? '🚨 CRITICAL: ' : 
+                                  alert.severity === 'urgent' ? '⚠️ URGENT: ' : '⏰ '}
+                                ${alert.medication} (${alert.slot})
+                            </div>
+                            <div class="alert-message">
+                                Scheduled for ${alert.scheduled_time} • ${timeText} overdue
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            alertContainer.innerHTML = alertHtml;
+        }
+
+        // Frequency selection
+        document.querySelectorAll('.freq-option').forEach(opt => {
+            opt.addEventListener('click', () => {
+                document.querySelectorAll('.freq-option').forEach(o => o.classList.remove('active'));
+                opt.classList.add('active');
+                selectedFrequency = parseInt(opt.dataset.freq);
+
+                document.querySelectorAll('.time-selection').forEach(ts => ts.classList.remove('show'));
+                // Reset all time option selections
+                document.querySelectorAll('.time-option').forEach(o => o.classList.remove('selected'));
+
+                if (selectedFrequency === 1) {
+                    document.getElementById('timeSelection1').classList.add('show');
+                    selectedTimes = []; // Reset to empty - user will select
+                } else if (selectedFrequency === 2) {
+                    document.getElementById('timeSelection2').classList.add('show');
+                    selectedTimes = ['morning', 'night'];
+                } else if (selectedFrequency === 3) {
+                    document.getElementById('timeSelection3').classList.add('show');
+                    selectedTimes = ['morning', 'afternoon', 'night'];
+                }
+
+                document.getElementById('customTime').classList.add('show');
+                updateCustomTimeFields();
+            });
+        });
+
+        // Time option selection (for frequency 1)
+        document.querySelectorAll('.time-option').forEach(opt => {
+            opt.addEventListener('click', () => {
+                opt.classList.toggle('selected');
+                const time = opt.dataset.time;
+                if (opt.classList.contains('selected')) {
+                    if (!selectedTimes.includes(time)) selectedTimes.push(time);
+                } else {
+                    selectedTimes = selectedTimes.filter(t => t !== time);
+                }
+                updateCustomTimeFields();
+            });
+        });
+
+        // Custom time toggle
+        document.getElementById('useCustomTime').addEventListener('change', (e) => {
+            document.getElementById('customTimeGrid').style.display = e.target.checked ? 'grid' : 'none';
+        });
+
+        function updateCustomTimeFields() {
+            document.getElementById('customMorning').style.display = selectedTimes.includes('morning') ? 'flex' : 'none';
+            document.getElementById('customAfternoon').style.display = selectedTimes.includes('afternoon') ? 'flex' : 'none';
+            document.getElementById('customNight').style.display = selectedTimes.includes('night') ? 'flex' : 'none';
+        }
+
+        // Form submission
+        document.getElementById('medicationForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const tabletName = document.getElementById('tabletName').value.trim();
+            if (!tabletName || selectedFrequency === 0 || selectedTimes.length === 0) {
+                alert('Please fill in all fields'); return;
+            }
+
+            const customTimes = {};
+            if (document.getElementById('useCustomTime').checked) {
+                if (selectedTimes.includes('morning')) customTimes.morning = document.getElementById('morningTime').value;
+                if (selectedTimes.includes('afternoon')) customTimes.afternoon = document.getElementById('afternoonTime').value;
+                if (selectedTimes.includes('night')) customTimes.night = document.getElementById('nightTime').value;
+            }
+
+            try {
+                const response = await fetch('/api/medications', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        tablet_name: tabletName,
+                        frequency: selectedFrequency,
+                        times: selectedTimes,
+                        custom_times: customTimes
+                    })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    // Reload from server to ensure sync
+                    await loadMedications();
+                    document.getElementById('medicationForm').reset();
+                    document.querySelectorAll('.freq-option').forEach(o => o.classList.remove('active'));
+                    document.querySelectorAll('.time-option').forEach(o => o.classList.remove('selected'));
+                    document.querySelectorAll('.time-selection').forEach(ts => ts.classList.remove('show'));
+                    document.getElementById('customTime').classList.remove('show');
+                    selectedFrequency = 0; selectedTimes = [];
+                } else {
+                    alert('Failed to add medication. Please try again.');
+                }
+            } catch (error) { 
+                console.error('Error adding medication:', error);
+                alert('Error adding medication. Please try again.');
+            }
+        });
+
+        function renderMedications() {
+            const medList = document.getElementById('medList');
+            const emptyState = document.getElementById('emptyState');
+
+            if (medications.length === 0) {
+                emptyState.style.display = 'block'; return;
+            }
+            emptyState.style.display = 'none';
+
+            let html = '';
+            let hasOverdue = false;
+
+            medications.forEach(med => {
+                let isOverdue = false;
+                med.schedule.forEach(s => {
+                    if (!s.taken && isTimeOverdue(s.time)) isOverdue = true;
+                });
+                if (isOverdue) hasOverdue = true;
+
+                html += `<div class="med-card ${isOverdue ? 'overdue' : ''}">
+                    <div class="med-header">
+                        <div class="med-name"><i class="fas fa-pills"></i> ${med.tablet_name}</div>
+                        <button class="delete-btn" onclick="deleteMedication('${med.id}')"><i class="fas fa-trash"></i></button>
+                    </div>
+                    <div class="med-schedule">`;
+
+                med.schedule.forEach(s => {
+                    const overdue = !s.taken && isTimeOverdue(s.time);
+                    const itemClass = s.taken ? 'taken' : (overdue ? 'overdue' : '');
+                    const countdown = getCountdown(s.time, s.taken);
+
+                    html += `<div class="schedule-item ${itemClass}">
+                        <div class="schedule-header">
+                            <div class="schedule-slot"><i class="fas fa-${s.slot === 'morning' ? 'sun' : s.slot === 'afternoon' ? 'cloud-sun' : 'moon'}"></i> ${s.slot}</div>
+                            <div class="schedule-time">${formatTime(s.time)}</div>
+                        </div>
+                        <div class="countdown ${countdown.class}">${countdown.text}</div>
+                        <button class="take-btn ${overdue && !s.taken ? 'overdue' : ''}" onclick="markTaken('${med.id}', '${s.slot}')" ${s.taken ? 'disabled' : ''}>
+                            ${s.taken ? '<i class="fas fa-check"></i> Taken' : (overdue ? '<i class="fas fa-exclamation"></i> Take Now!' : '<i class="fas fa-check"></i> Mark as Taken')}
+                        </button>
+                    </div>`;
+                });
+
+                html += '</div></div>';
+            });
+
+            medList.innerHTML = html;
+            const alertBanner = document.getElementById('alertBanner');
+            if (hasOverdue) alertBanner.classList.add('show');
+            else alertBanner.classList.remove('show');
+        }
+
+        function formatTime(timeStr) {
+            const [h, m] = timeStr.split(':');
+            const hour = parseInt(h);
+            const ampm = hour >= 12 ? 'PM' : 'AM';
+            const displayHour = hour % 12 || 12;
+            return `${displayHour}:${m} ${ampm}`;
+        }
+
+        function isTimeOverdue(timeStr) {
+            const now = new Date();
+            const [h, m] = timeStr.split(':');
+            const medTime = new Date();
+            medTime.setHours(parseInt(h), parseInt(m), 0, 0);
+            return now > medTime;
+        }
+
+        function getCountdown(timeStr, taken) {
+            if (taken) return { text: 'Completed', class: 'taken' };
+            const now = new Date();
+            const [h, m] = timeStr.split(':');
+            const medTime = new Date();
+            medTime.setHours(parseInt(h), parseInt(m), 0, 0);
+            const diff = medTime - now;
+            if (diff < 0) return { text: 'OVERDUE', class: 'overdue' };
+            const hours = Math.floor(diff / 3600000);
+            const mins = Math.floor((diff % 3600000) / 60000);
+            if (hours === 0 && mins <= 30) return { text: `${mins} min remaining`, class: 'urgent' };
+            return { text: `${hours}h ${mins}m remaining`, class: '' };
+        }
+
+        async function markTaken(medId, slot) {
+            try {
+                await fetch('/api/medications/mark-taken', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ med_id: medId, slot: slot })
+                });
+                medications.forEach(med => {
+                    if (med.id === medId) {
+                        med.schedule.forEach(s => {
+                            if (s.slot === slot) { s.taken = true; s.taken_at = new Date().toISOString(); }
+                        });
+                    }
+                });
+                renderMedications();
+                loadAlerts(); // Refresh alerts after marking as taken
+            } catch (error) { console.error('Error:', error); }
+        }
+
+        async function deleteMedication(id) {
+            if (!confirm('Are you sure you want to delete this medication?')) return;
+            try {
+                const response = await fetch('/api/medications', {
+                    method: 'DELETE',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id: id })
+                });
+                
+                if (response.ok) {
+                    // Immediately remove from local array for instant UI update
+                    medications = medications.filter(med => med.id !== id);
+                    renderMedications();
+                    await loadAlerts().catch(err => console.error('Alert load error:', err));
+                    console.log('Medication deleted successfully');
+                } else {
+                    const errorText = await response.text();
+                    console.error('Server returned error:', response.status, errorText);
+                    alert('Failed to delete medication. Please try again.');
+                }
+            } catch (error) { 
+                console.error('Error deleting medication:', error);
+                // Don't show alert if delete actually succeeded
+                if (medications.some(med => med.id === id)) {
+                    alert('Error deleting medication. Please try again.');
+                }
+            }
+        }
+
+        async function resetDaily() {
+            if (!confirm('Reset all medications for a new day?')) return;
+            try {
+                await fetch('/api/medications/reset-daily', { method: 'POST' });
+                medications.forEach(med => {
+                    med.schedule.forEach(s => { s.taken = false; s.taken_at = null; });
+                });
+                renderMedications();
+                loadAlerts(); // Refresh alerts after reset
+            } catch (error) { console.error('Error:', error); }
+        }
+
+        // Update current time
+        function updateClock() {
+            const now = new Date();
+            document.getElementById('currentTime').textContent = now.toLocaleTimeString();
+            document.getElementById('currentDate').textContent = now.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+        }
+        updateClock();
+        setInterval(updateClock, 1000);
+        setInterval(renderMedications, 5000);
+        setInterval(loadAlerts, 5000);
+
+        function showDeleteAccountModal() {
+            document.getElementById('deleteAccountModal').classList.add('show');
+        }
+        function hideDeleteAccountModal() {
+            document.getElementById('deleteAccountModal').classList.remove('show');
+        }
+        // Wait for Firebase auth state — currentUser can be null immediately after SDK init
+        function getFirebaseUser() {
+            return new Promise((resolve) => {
+                const unsub = firebase.auth().onAuthStateChanged(user => { unsub(); resolve(user); });
+            });
+        }
+
+        async function confirmDeleteAccount() {
+            const btn = document.getElementById('confirmDeleteBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Deleting...';
+            try {
+                // Step 1: Delete Firebase account FIRST
+                const firebaseUser = await getFirebaseUser();
+                if (firebaseUser) {
+                    try {
+                        await firebaseUser.delete();
+                    } catch (firebaseError) {
+                        if (firebaseError.code === 'auth/requires-recent-login') {
+                            alert('For security reasons, please log out and log back in before deleting your account.');
+                            window.location.href = '/logout';
+                            return;
+                        }
+                        console.warn('Firebase delete warning:', firebaseError.message);
+                    }
+                }
+                // Step 2: Delete from backend
+                const response = await fetch('/api/delete-account', { method: 'DELETE', headers: { 'Content-Type': 'application/json' } });
+                const data = await response.json();
+                if (data.success) {
+                    alert('Account deleted successfully.');
+                    window.location.href = '/login';
+                } else {
+                    alert('Error: ' + data.error);
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fas fa-trash"></i> Yes, Delete My Account';
+                }
+            } catch (err) {
+                alert('An error occurred. Please try again.');
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-trash"></i> Yes, Delete My Account';
+            }
+        }
+    </script>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script>
+        if (!firebase.apps.length) {
+            firebase.initializeApp({
+                apiKey: "{{ firebase_config.api_key }}",
+                authDomain: "{{ firebase_config.auth_domain }}",
+                projectId: "{{ firebase_config.project_id }}",
+                storageBucket: "{{ firebase_config.storage_bucket }}",
+                messagingSenderId: "{{ firebase_config.messaging_sender_id }}",
+                appId: "{{ firebase_config.app_id }}"
+            });
+        }
+    </script>
+    <script src="/static/js/theme-toggle.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Stroke Risk Prediction</title>
+    <meta name="description" content="Sign in to the Stroke Risk Prediction system for AI-powered health analysis and stroke risk assessment.">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/static/css/theme-toggle.css">
+    <style>
+        :root {
+            --primary: #0EA5E9;
+            --primary-dark: #0369A1;
+            --primary-glow: rgba(14, 165, 233, 0.3);
+            --accent: #06D6A0;
+            --accent-glow: rgba(6, 214, 160, 0.2);
+            --danger: #F43F5E;
+            --success: #10B981;
+            --bg-dark: #0B1120;
+            --bg-card: rgba(15, 23, 42, 0.85);
+            --bg-input: rgba(30, 41, 59, 0.8);
+            --border: rgba(56, 189, 248, 0.15);
+            --border-focus: rgba(14, 165, 233, 0.5);
+            --text-primary: #F1F5F9;
+            --text-secondary: #94A3B8;
+            --text-muted: #64748B;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-dark);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            overflow: hidden;
+        }
+
+        /* Animated background */
+        .bg-gradient {
+            position: fixed;
+            inset: 0;
+            background: 
+                radial-gradient(ellipse 80% 50% at 50% -20%, rgba(14, 165, 233, 0.15), transparent),
+                radial-gradient(ellipse 60% 40% at 80% 100%, rgba(6, 214, 160, 0.1), transparent),
+                radial-gradient(ellipse 50% 60% at 10% 60%, rgba(99, 102, 241, 0.08), transparent);
+            z-index: 0;
+        }
+
+        /* Floating particles */
+        .particles {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            overflow: hidden;
+        }
+
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: rgba(14, 165, 233, 0.4);
+            border-radius: 50%;
+            animation: float-up linear infinite;
+        }
+
+        @keyframes float-up {
+            0% { transform: translateY(100vh) scale(0); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(-10vh) scale(1); opacity: 0; }
+        }
+
+        /* Grid pattern overlay */
+        .grid-pattern {
+            position: fixed;
+            inset: 0;
+            background-image: 
+                linear-gradient(rgba(14, 165, 233, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(14, 165, 233, 0.03) 1px, transparent 1px);
+            background-size: 60px 60px;
+            z-index: 0;
+        }
+
+        .login-container {
+            position: relative;
+            z-index: 10;
+            background: var(--bg-card);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 48px;
+            width: 100%;
+            max-width: 440px;
+            box-shadow: 
+                0 0 0 1px rgba(14, 165, 233, 0.05),
+                0 25px 80px rgba(0, 0, 0, 0.5),
+                0 0 60px rgba(14, 165, 233, 0.05);
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 36px;
+        }
+
+        .logo-icon {
+            width: 72px;
+            height: 72px;
+            margin: 0 auto 18px;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            color: white;
+            box-shadow: 0 8px 32px var(--primary-glow);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .logo-icon::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, transparent 40%, rgba(255,255,255,0.15));
+        }
+
+        .logo-icon i {
+            position: relative;
+            z-index: 1;
+            animation: heartbeat 2s ease-in-out infinite;
+        }
+
+        @keyframes heartbeat {
+            0%, 100% { transform: scale(1); }
+            14% { transform: scale(1.15); }
+            28% { transform: scale(1); }
+            42% { transform: scale(1.1); }
+            56% { transform: scale(1); }
+        }
+
+        .logo h1 {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: var(--text-primary);
+            letter-spacing: -0.5px;
+        }
+
+        .logo p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-top: 6px;
+            font-weight: 400;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .input-wrapper i {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            transition: color 0.3s;
+        }
+
+        .input-wrapper input {
+            width: 100%;
+            padding: 14px 16px 14px 46px;
+            background: var(--bg-input);
+            border: 1.5px solid var(--border);
+            border-radius: 12px;
+            font-size: 0.95rem;
+            font-family: inherit;
+            color: var(--text-primary);
+            transition: all 0.3s ease;
+        }
+
+        .input-wrapper input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .input-wrapper input:focus {
+            outline: none;
+            border-color: var(--border-focus);
+            background: rgba(30, 41, 59, 1);
+            box-shadow: 0 0 0 4px rgba(14, 165, 233, 0.08), 0 0 20px rgba(14, 165, 233, 0.05);
+        }
+
+        .input-wrapper input:focus + i,
+        .input-wrapper:focus-within i {
+            color: var(--primary);
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, var(--primary) 0%, #0284C7 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .submit-btn::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, transparent, rgba(255,255,255,0.1));
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px var(--primary-glow);
+        }
+
+        .submit-btn:hover::before { opacity: 1; }
+
+        .submit-btn:active {
+            transform: translateY(0);
+        }
+
+        .error-message {
+            background: rgba(244, 63, 94, 0.1);
+            border: 1px solid rgba(244, 63, 94, 0.3);
+            color: #FB7185;
+            padding: 12px 16px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-size: 0.88rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 500;
+        }
+
+        .success-message {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            color: #34D399;
+            padding: 12px 16px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-size: 0.88rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 500;
+        }
+
+        .links {
+            text-align: center;
+            margin-top: 24px;
+        }
+
+        .links a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.88rem;
+            transition: color 0.3s;
+        }
+
+        .links a:hover {
+            color: var(--accent);
+        }
+
+        .links p {
+            color: var(--text-muted);
+            font-size: 0.88rem;
+            margin-top: 12px;
+        }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            margin: 20px 0;
+        }
+
+        .divider::before, .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--border);
+        }
+
+        .divider span {
+            padding: 0 14px;
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Medical cross watermark */
+        .watermark {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            z-index: 5;
+            opacity: 0.5;
+        }
+
+        .watermark i { color: var(--primary); }
+
+        @media (max-width: 480px) {
+            .login-container {
+                padding: 32px 24px;
+            }
+            .logo h1 { font-size: 1.4rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-gradient"></div>
+    <div class="grid-pattern"></div>
+    <div class="particles" id="particles"></div>
+
+    <div class="login-container">
+        <div class="logo">
+            <div class="logo-icon">
+                <i class="fas fa-heartbeat"></i>
+            </div>
+            <h1>Stroke Risk Prediction</h1>
+            <p>AI-Powered Health Analytics</p>
+        </div>
+
+        {% if error %}
+        <div class="error-message">
+            <i class="fas fa-exclamation-circle"></i>
+            {{ error }}
+        </div>
+        {% endif %}
+
+        {% if request.args.get('success') %}
+        <div class="success-message">
+            <i class="fas fa-check-circle"></i>
+            {{ request.args.get('success') }}
+        </div>
+        {% endif %}
+
+        <form id="loginForm">
+            <div class="form-group">
+                <label>Email</label>
+                <div class="input-wrapper">
+                    <input type="email" name="email" placeholder="Enter your email" required id="emailInput">
+                    <i class="fas fa-envelope"></i>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Password</label>
+                <div class="input-wrapper">
+                    <input type="password" name="password" placeholder="Enter your password" required id="passwordInput">
+                    <i class="fas fa-lock"></i>
+                </div>
+            </div>
+
+            <button type="submit" class="submit-btn" id="submitBtn">
+                <i class="fas fa-sign-in-alt"></i>
+                <span>Sign In</span>
+            </button>
+        </form>
+
+        <div class="divider"><span>or continue with</span></div>
+
+        <button type="button" class="submit-btn" id="googleSignInBtn" style="background: linear-gradient(135deg, #EA4335, #DB4437); margin-top: 12px;">
+            <i class="fab fa-google"></i>
+            <span>Sign in with Google</span>
+        </button>
+
+        <div class="links">
+            <a href="/forgot-password">Forgot password?</a>
+            <p style="margin-top: 16px;">Don't have an account? <a href="/register">Create one</a></p>
+        </div>
+    </div>
+
+    <div class="watermark">
+        <i class="fas fa-shield-alt"></i>
+        <span>Secured Medical Platform</span>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    
+    <!-- Theme Toggle -->
+    <script src="/static/js/theme-toggle.js"></script>
+    
+    <!-- Firebase Configuration -->
+    <script>
+        // Pass Firebase config from environment variables
+        window.FIREBASE_CONFIG = {
+            apiKey: "{{ firebase_config.api_key }}",
+            authDomain: "{{ firebase_config.auth_domain }}",
+            projectId: "{{ firebase_config.project_id }}",
+            storageBucket: "{{ firebase_config.storage_bucket }}",
+            messagingSenderId: "{{ firebase_config.messaging_sender_id }}",
+            appId: "{{ firebase_config.app_id }}",
+            measurementId: "{{ firebase_config.measurement_id }}"
+        };
+        
+        // Debug: Check if config is properly loaded
+        console.log('Template Config:', window.FIREBASE_CONFIG);
+    </script>
+    
+    <!-- Firebase Auth Module -->
+    <script src="/static/js/firebase-config.js"></script>
+
+    <script>
+        // Create floating particles
+        const particlesContainer = document.getElementById('particles');
+        for (let i = 0; i < 30; i++) {
+            const particle = document.createElement('div');
+            particle.className = 'particle';
+            particle.style.left = Math.random() * 100 + '%';
+            particle.style.animationDuration = (Math.random() * 8 + 6) + 's';
+            particle.style.animationDelay = (Math.random() * 5) + 's';
+            particle.style.width = (Math.random() * 3 + 2) + 'px';
+            particle.style.height = particle.style.width;
+            particle.style.background = `rgba(${Math.random() > 0.5 ? '14, 165, 233' : '6, 214, 160'}, ${Math.random() * 0.3 + 0.1})`;
+            particlesContainer.appendChild(particle);
+        }
+
+        // Wait for Firebase to be ready
+        function initializeAuthHandlers() {
+            if (typeof auth === 'undefined') {
+                console.error('Firebase auth not initialized!');
+                showError('Authentication system not ready. Please refresh the page.');
+                return;
+            }
+            
+            console.log('Initializing auth handlers...');
+
+            // Email/Password Login
+            document.getElementById('loginForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                const email = document.getElementById('emailInput').value;
+                const password = document.getElementById('passwordInput').value;
+                const submitBtn = document.getElementById('submitBtn');
+                
+                console.log('Login form submitted for:', email);
+                const originalText = showLoading(submitBtn);
+                
+                const result = await signInWithEmail(email, password);
+                
+                if (result.success) {
+                    // Get Firebase token
+                    const token = await getUserToken();
+                    
+                    // Send to backend to create session
+                    try {
+                        const response = await fetch('/firebase-login', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({
+                                token: token,
+                                email: result.user.email,
+                                uid: result.user.uid,
+                                displayName: result.user.displayName
+                            })
+                        });
+                        
+                        const data = await response.json();
+                        
+                        if (data.success) {
+                            showSuccess('Login successful! Redirecting...');
+                            setTimeout(() => {
+                                window.location.href = '/dashboard';
+                            }, 1000);
+                        } else {
+                            hideLoading(submitBtn, originalText);
+                            showError(data.error || 'Login failed. Please try again.');
+                        }
+                    } catch (error) {
+                        console.error('Backend error:', error);
+                        hideLoading(submitBtn, originalText);
+                        showError('Network error. Please try again.');
+                    }
+                } else {
+                    hideLoading(submitBtn, originalText);
+                    showError(result.error);
+                }
+            });
+
+            // Google Sign In
+            document.getElementById('googleSignInBtn').addEventListener('click', async () => {
+                const btn = document.getElementById('googleSignInBtn');
+                const originalText = showLoading(btn);
+                
+                console.log('Google sign-in button clicked');
+                const result = await signInWithGoogle();
+                
+                if (result.success) {
+                    // Get Firebase token
+                    const token = await getUserToken();
+                    
+                    // Send to backend to create session
+                    try {
+                        const response = await fetch('/firebase-login', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({
+                                token: token,
+                                email: result.user.email,
+                                uid: result.user.uid,
+                                displayName: result.user.displayName,
+                                photoURL: result.user.photoURL,
+                                provider: 'google'
+                            })
+                        });
+                        
+                        const data = await response.json();
+                        
+                        if (data.success) {
+                            showSuccess('Login successful! Redirecting...');
+                            setTimeout(() => {
+                                window.location.href = '/dashboard';
+                            }, 1000);
+                        } else {
+                            hideLoading(btn, originalText);
+                            showError(data.error || 'Login failed. Please try again.');
+                        }
+                    } catch (error) {
+                        console.error('Backend error:', error);
+                        hideLoading(btn, originalText);
+                        showError('Network error. Please try again.');
+                    }
+                } else {
+                    hideLoading(btn, originalText);
+                    showError(result.error);
+                }
+            });
+            
+            console.log('Auth handlers initialized successfully');
+        }
+
+        // Initialize handlers when DOM is ready and Firebase is loaded
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => {
+                setTimeout(initializeAuthHandlers, 500); // Small delay to ensure Firebase is fully loaded
+            });
+        } else {
+            setTimeout(initializeAuthHandlers, 500);
+        }
+    </script>
+</body>
+</html>
