@@ -1,0 +1,157 @@
+{
+    "raj@gmail.com": [
+        {
+            "id": "20260212141651848979",
+            "tablet_name": "Tablet",
+            "frequency": 3,
+            "schedule": [
+                {
+                    "slot": "morning",
+                    "time": "09:00",
+                    "taken": false,
+                    "taken_at": null,
+                    "last_alert_sent": "2026-02-19T11:06:47.552258",
+                    "alert_count": 2
+                },
+                {
+                    "slot": "afternoon",
+                    "time": "13:00",
+                    "taken": false,
+                    "taken_at": null,
+                    "last_alert_sent": "2026-02-19T20:10:25.033110",
+                    "alert_count": 2
+                },
+                {
+                    "slot": "night",
+                    "time": "20:30",
+                    "taken": false,
+                    "taken_at": null
+                }
+            ],
+            "created_at": "2026-02-12T14:16:51.849014"
+        }
+    ],
+    "rajasekhar6105_gmail_com": [
+        {
+            "id": "20260219113449128479",
+            "tablet_name": "Tablet 2",
+            "frequency": 2,
+            "schedule": [
+                {
+                    "slot": "morning",
+                    "time": "11:35",
+                    "taken": false,
+                    "taken_at": null,
+                    "last_alert_sent": "2026-02-19T20:10:30.683798",
+                    "alert_count": 2
+                },
+                {
+                    "slot": "night",
+                    "time": "20:30",
+                    "taken": false,
+                    "taken_at": null,
+                    "last_alert_sent": "2026-03-27T22:30:32.780971",
+                    "alert_count": 2
+                }
+            ],
+            "created_at": "2026-02-19T11:34:49.128511"
+        },
+        {
+            "id": "20260219113452686980",
+            "tablet_name": "Tablet 2",
+            "frequency": 2,
+            "schedule": [
+                {
+                    "slot": "morning",
+                    "time": "11:35",
+                    "taken": false,
+                    "taken_at": null,
+                    "last_alert_sent": "2026-02-19T20:10:30.683798",
+                    "alert_count": 2
+                },
+                {
+                    "slot": "night",
+                    "time": "20:30",
+                    "taken": false,
+                    "taken_at": null,
+                    "last_alert_sent": "2026-03-27T22:30:32.780971",
+                    "alert_count": 2
+                }
+            ],
+            "created_at": "2026-02-19T11:34:52.687012"
+        },
+        {
+            "id": "20260219113503137478",
+            "tablet_name": "Tablet 2",
+            "frequency": 2,
+            "schedule": [
+                {
+                    "slot": "morning",
+                    "time": "11:35",
+                    "taken": false,
+                    "taken_at": null,
+                    "last_alert_sent": "2026-02-19T20:10:30.683798",
+                    "alert_count": 2
+                },
+                {
+                    "slot": "night",
+                    "time": "20:30",
+                    "taken": false,
+                    "taken_at": null,
+                    "last_alert_sent": "2026-03-27T22:30:32.780971",
+                    "alert_count": 2
+                }
+            ],
+            "created_at": "2026-02-19T11:35:03.137527"
+        },
+        {
+            "id": "20260219113537307059",
+            "tablet_name": "Tab 3",
+            "frequency": 2,
+            "schedule": [
+                {
+                    "slot": "morning",
+                    "time": "11:36",
+                    "taken": false,
+                    "taken_at": null,
+                    "last_alert_sent": "2026-02-19T20:10:30.683798",
+                    "alert_count": 2
+                },
+                {
+                    "slot": "night",
+                    "time": "20:30",
+                    "taken": false,
+                    "taken_at": null,
+                    "last_alert_sent": "2026-03-27T22:30:32.780971",
+                    "alert_count": 2
+                }
+            ],
+            "created_at": "2026-02-19T11:35:37.307097"
+        },
+        {
+            "id": "20260219113539274352",
+            "tablet_name": "Tab 3",
+            "frequency": 2,
+            "schedule": [
+                {
+                    "slot": "morning",
+                    "time": "11:36",
+                    "taken": false,
+                    "taken_at": null,
+                    "last_alert_sent": "2026-02-19T20:10:30.683798",
+                    "alert_count": 2
+                },
+                {
+                    "slot": "night",
+                    "time": "20:30",
+                    "taken": false,
+                    "taken_at": null,
+                    "last_alert_sent": "2026-03-27T22:30:32.780971",
+                    "alert_count": 2
+                }
+            ],
+            "created_at": "2026-02-19T11:35:39.274410"
+        }
+    ],
+    "durgaprasad41930_gmail_com": []
+}
