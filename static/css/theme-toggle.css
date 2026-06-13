@@ -1,0 +1,249 @@
+/* Theme Toggle Styles and Variables */
+
+/* Light Theme Variables */
+body[data-theme="light"] {
+    --primary: #0EA5E9;
+    --primary-dark: #0369A1;
+    --primary-glow: rgba(14, 165, 233, 0.15);
+    --accent: #06D6A0;
+    --accent-glow: rgba(6, 214, 160, 0.15);
+    --accent-alt: #8B5CF6;
+    --success: #10B981;
+    --danger: #F43F5E;
+    --warning: #F59E0B;
+    --bg-dark: #F8FAFC;
+    --bg-surface: rgba(255, 255, 255, 0.9);
+    --bg-card: rgba(255, 255, 255, 0.95);
+    --bg-elevated: rgba(248, 250, 252, 0.9);
+    --bg-input: rgba(241, 245, 249, 0.95);
+    --border: rgba(14, 165, 233, 0.15);
+    --border-subtle: rgba(14, 165, 233, 0.08);
+    --border-focus: rgba(14, 165, 233, 0.4);
+    --text-primary: #0F172A;
+    --text-secondary: #475569;
+    --text-muted: #64748B;
+}
+
+/* Theme Toggle Button */
+.theme-toggle {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 9999;
+    background: var(--bg-card);
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--border);
+    border-radius: 50px;
+    padding: 8px 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    user-select: none;
+}
+
+.theme-toggle:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 25px var(--primary-glow);
+    border-color: var(--border-focus);
+}
+
+.theme-toggle-track {
+    position: relative;
+    width: 50px;
+    height: 26px;
+    background: var(--bg-input);
+    border-radius: 13px;
+    border: 1px solid var(--border);
+    transition: all 0.3s ease;
+}
+
+.theme-toggle-thumb {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 20px;
+    height: 20px;
+    background: linear-gradient(135deg, var(--primary), var(--accent));
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.theme-toggle-thumb i {
+    font-size: 11px;
+    color: white;
+}
+
+body[data-theme="light"] .theme-toggle-thumb {
+    left: 26px;
+    background: linear-gradient(135deg, #F59E0B, #FBBF24);
+}
+
+.theme-toggle-label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    min-width: 40px;
+}
+
+/* Smooth transitions for theme changes */
+body,
+.bg-gradient,
+.bg-effects,
+.grid-pattern,
+.grid-overlay,
+.login-container,
+.navbar,
+.header,
+.card,
+.stat-card,
+.input-wrapper input,
+.btn,
+button,
+.theme-toggle,
+.theme-toggle-track,
+.theme-toggle-thumb {
+    transition: background-color 0.3s ease, background 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Light theme adjustments for particles */
+body[data-theme="light"] .particle {
+    background: rgba(14, 165, 233, 0.3);
+}
+
+body[data-theme="light"] .bg-gradient {
+    background: 
+        radial-gradient(ellipse 80% 50% at 50% -20%, rgba(14, 165, 233, 0.08), transparent),
+        radial-gradient(ellipse 60% 40% at 80% 100%, rgba(6, 214, 160, 0.06), transparent),
+        radial-gradient(ellipse 50% 60% at 10% 60%, rgba(99, 102, 241, 0.04), transparent);
+}
+
+body[data-theme="light"] .grid-pattern,
+body[data-theme="light"] .grid-overlay {
+    background-image: 
+        linear-gradient(rgba(14, 165, 233, 0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(14, 165, 233, 0.04) 1px, transparent 1px);
+}
+
+body[data-theme="light"] .bg-effects {
+    background:
+        radial-gradient(ellipse 80% 50% at 50% -20%, rgba(14, 165, 233, 0.06), transparent),
+        radial-gradient(ellipse 60% 40% at 90% 100%, rgba(6, 214, 160, 0.04), transparent),
+        radial-gradient(ellipse 40% 50% at 5% 50%, rgba(139, 92, 246, 0.03), transparent);
+}
+
+/* Light mode input and form field overrides */
+body[data-theme="light"] input,
+body[data-theme="light"] select,
+body[data-theme="light"] textarea,
+body[data-theme="light"] .input-wrapper input,
+body[data-theme="light"] .form-group input,
+body[data-theme="light"] .form-group select {
+    background-color: rgba(241, 245, 249, 0.8) !important;
+    color: #0F172A !important;
+    border-color: rgba(14, 165, 233, 0.15) !important;
+    border-style: solid !important;
+}
+
+body[data-theme="light"] input:focus,
+body[data-theme="light"] select:focus,
+body[data-theme="light"] textarea:focus,
+body[data-theme="light"] .input-wrapper input:focus,
+body[data-theme="light"] .form-group input:focus,
+body[data-theme="light"] .form-group select:focus {
+    background-color: rgba(255, 255, 255, 0.95) !important;
+    border-color: rgba(14, 165, 233, 0.4) !important;
+    border-style: solid !important;
+    box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.08) !important;
+}
+
+body[data-theme="light"] input::placeholder,
+body[data-theme="light"] textarea::placeholder {
+    color: #64748B !important;
+}
+
+/* Light mode select dropdown options */
+body[data-theme="light"] select option,
+body[data-theme="light"] .form-group select option {
+    background: #FFFFFF !important;
+    color: #0F172A !important;
+}
+
+/* Light mode select dropdown arrow */
+body[data-theme="light"] select,
+body[data-theme="light"] .form-group select {
+    -webkit-appearance: none !important;
+    -moz-appearance: none !important;
+    appearance: none !important;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'%3E%3Cpath fill='%23475569' d='M8 11L3 6h10l-5 5z'/%3E%3C/svg%3E") !important;
+    background-repeat: no-repeat !important;
+    background-position: right 14px center !important;
+    background-size: 14px 14px !important;
+    padding-right: 40px !important;
+}
+
+/* Light mode autofill styles */
+body[data-theme="light"] input:-webkit-autofill,
+body[data-theme="light"] input:-webkit-autofill:hover,
+body[data-theme="light"] input:-webkit-autofill:focus {
+    -webkit-box-shadow: 0 0 0 1000px rgba(255, 255, 255, 0.95) inset !important;
+    -webkit-text-fill-color: #0F172A !important;
+    border-color: rgba(14, 165, 233, 0.2) !important;
+}
+
+/* Light mode — Patient Summary */
+body[data-theme="light"] .patient-summary {
+    background: rgba(255, 255, 255, 0.9);
+    border-color: rgba(14, 165, 233, 0.15);
+}
+
+body[data-theme="light"] .summary-item {
+    background: rgba(241, 245, 249, 0.9) !important;
+    border-color: rgba(14, 165, 233, 0.12) !important;
+}
+
+body[data-theme="light"] .summary-item span:first-child {
+    color: #475569 !important;
+}
+
+body[data-theme="light"] .summary-item span:last-child {
+    color: #0369A1 !important;
+}
+
+body[data-theme="light"] .patient-summary h4 {
+    color: #0F172A !important;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .theme-toggle {
+        top: 15px;
+        right: 15px;
+        padding: 6px 12px;
+    }
+    
+    .theme-toggle-label {
+        font-size: 0.75rem;
+        min-width: 35px;
+    }
+    
+    .theme-toggle-track {
+        width: 44px;
+        height: 24px;
+    }
+    
+    .theme-toggle-thumb {
+        width: 18px;
+        height: 18px;
+    }
+    
+    body[data-theme="light"] .theme-toggle-thumb {
+        left: 23px;
+    }
+}
